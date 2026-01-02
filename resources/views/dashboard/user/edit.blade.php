@@ -1,11 +1,14 @@
 @extends('base.layout.app')
 
-@section('title', 'إضافة مستخدم جديد')
+@section('title', 'تعديل المستخدم')
 
 @section('content')
 
 <div class="d-flex flex-wrap align-items-center justify-content-between mb-5 gap-3">
-    <h2 class="fw-bold mb-0">إضافة مستخدم جديد</h2>
+    <div>
+        <h2 class="fw-bold mb-1">تعديل المستخدم: {{ $user->name }}</h2>
+        <div class="text-muted">رقم الجوال: {{ $user->mobile }}</div>
+    </div>
     <a href="{{ route('dashboard.users.index') }}" class="btn btn-light">
         رجوع لقائمة المستخدمين
     </a>
@@ -19,8 +22,9 @@
 
 <div class="card">
     <div class="card-body">
-        <form id="user-form" action="{{ route('dashboard.users.store') }}" method="POST">
+        <form id="user-form" action="{{ route('dashboard.users.update', $user->id) }}" method="POST">
             @csrf
+            @method('PUT')
 
             <div class="row g-4">
 
@@ -28,7 +32,7 @@
                     <label class="form-label fw-bold">الاسم</label>
                     <input type="text"
                            name="name"
-                           value="{{ old('name') }}"
+                           value="{{ old('name', $user->name) }}"
                            class="form-control form-control-solid @error('name') is-invalid @enderror">
                     @error('name')
                         <div class="invalid-feedback d-block">{{ $message }}</div>
@@ -39,7 +43,7 @@
                     <label class="form-label fw-bold">البريد الإلكتروني</label>
                     <input type="email"
                            name="email"
-                           value="{{ old('email') }}"
+                           value="{{ old('email', $user->email) }}"
                            class="form-control form-control-solid @error('email') is-invalid @enderror">
                     @error('email')
                         <div class="invalid-feedback d-block">{{ $message }}</div>
@@ -50,8 +54,7 @@
                     <label class="form-label fw-bold">رقم الجوال</label>
                     <input type="text"
                            name="mobile"
-                           value="{{ old('mobile') }}"
-                           placeholder="05XXXXXXXX"
+                           value="{{ old('mobile', $user->mobile) }}"
                            class="form-control form-control-solid @error('mobile') is-invalid @enderror">
                     @error('mobile')
                         <div class="invalid-feedback d-block">{{ $message }}</div>
@@ -59,10 +62,11 @@
                 </div>
 
                 <div class="col-md-6">
-                    <label class="form-label fw-bold">كلمة المرور</label>
+                    <label class="form-label fw-bold">كلمة المرور الجديدة (اختياري)</label>
                     <input type="password"
                            name="password"
-                           class="form-control form-control-solid @error('password') is-invalid @enderror">
+                           class="form-control form-control-solid @error('password') is-invalid @enderror"
+                           placeholder="اتركه فارغًا للإبقاء على كلمة المرور الحالية">
                     @error('password')
                         <div class="invalid-feedback d-block">{{ $message }}</div>
                     @enderror
@@ -72,9 +76,11 @@
                     <label class="form-label fw-bold">الدور</label>
                     <select name="role_id"
                             class="form-select form-select-solid @error('role_id') is-invalid @enderror">
+                        @php $currentRoleId = optional($user->roles->first())->id; @endphp
                         <option value="">اختر الدور</option>
                         @foreach($roles as $id => $name)
-                            <option value="{{ $id }}" @selected(old('role_id') == $id)>{{ $name }}</option>
+                            <option value="{{ $id }}"
+                                @selected(old('role_id', $currentRoleId) == $id)>{{ $name }}</option>
                         @endforeach
                     </select>
                     @error('role_id')
@@ -87,7 +93,7 @@
                     <div class="form-check form-switch form-check-custom form-check-solid">
                         <input class="form-check-input" type="checkbox" value="1"
                                id="is_active_switch" name="is_active"
-                               {{ old('is_active', 1) ? 'checked' : '' }}>
+                               {{ old('is_active', $user->is_active) ? 'checked' : '' }}>
                         <label class="form-check-label" for="is_active_switch">
                             مفعل
                         </label>
@@ -98,7 +104,7 @@
 
             <div class="d-flex justify-content-end gap-2 mt-6">
                 <button id="user-submit" type="submit" class="btn btn-primary">
-                    <span class="indicator-label">حفظ</span>
+                    <span class="indicator-label">حفظ التعديلات</span>
                     <span class="indicator-progress d-none">
                         جاري الحفظ...
                         <span class="spinner-border spinner-border-sm align-middle ms-2"></span>

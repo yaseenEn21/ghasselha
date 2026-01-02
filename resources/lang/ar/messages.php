@@ -18,5 +18,17 @@ return [
     'Name' => 'الإسم',
     'paid' => 'مدفوع',
     'present' => 'حضور',
-    'absent' => 'غياب'
+    'absent' => 'غياب',
+
+    // تأكيد الحذف
+    'confirm_delete_title' => 'هل أنت متأكد؟',
+    'confirm_delete_text' => 'سيتم حذف هذا السجل نهائيًا!',
+    'confirm_delete_confirm_button' => 'نعم، حذف',
+    'confirm_delete_cancel_button' => 'إلغاء',
+
+    // نتائج الحذف
+    'delete_success_title' => 'تم الحذف',
+    'delete_success_text' => 'تم حذف السجل بنجاح.',
+    'delete_error_title' => 'خطأ',
+    'delete_error_text' => 'حدث خطأ أثناء الحذف، حاول مرة أخرى.',
 ];

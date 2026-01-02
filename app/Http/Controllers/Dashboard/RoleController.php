@@ -16,8 +16,14 @@ class RoleController extends Controller
 
     public function __construct()
     {
+        // 🔐 Permissions middleware
+        $this->middleware('can:roles.view')->only(['index', 'show']);
+        $this->middleware('can:roles.create')->only(['create', 'store']);
+        $this->middleware('can:roles.edit')->only(['edit', 'update']);
+        $this->middleware('can:roles.delete')->only(['destroy']);
+
         $this->title = t("roles.list");
-        
+
         $this->page_title = t("roles.title");
 
         view()->share([
@@ -42,17 +48,28 @@ class RoleController extends Controller
                 ->addColumn('created_at', fn($row) => $row->created_at?->format('Y-m-d'))
                 // داخل index() أثناء بناء DataTables
                 ->addColumn('actions', function ($row) {
+                    // 🚫 لا تعرض أي أزرار للـ admin
+                    if (strtolower($row->name) === 'admin') {
+                        // تقدر ترجع نص بسيط أو حتى فاضي
+                        return '<span class="text-muted">غير قابل للتعديل</span>';
+                        // أو لو بدك ولا إشي حرفياً:
+                        // return '';
+                    }
+
                     $editUrl = route('dashboard.roles.edit', $row->id);
                     $deleteUrl = route('dashboard.roles.destroy', $row->id);
 
                     $btns = '';
+
                     if (auth()->user()->can('roles.edit')) {
                         $btns .= '<a href="' . $editUrl . '" class="btn btn-sm btn-light-primary me-2">تعديل</a>';
                     }
+
                     if (auth()->user()->can('roles.delete')) {
                         $btns .= '<button type="button" class="btn btn-sm btn-light-danger js-delete"
-                    data-url="' . $deleteUrl . '" data-name="' . e($row->name) . '">حذف</button>';
+            data-url="' . $deleteUrl . '" data-name="' . e($row->name) . '">حذف</button>';
                     }
+
                     return $btns ?: '<span class="text-muted">لا يوجد</span>';
                 })
                 ->rawColumns(['actions'])

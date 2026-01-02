@@ -66,10 +66,22 @@
                         title: "{{ t('datatable.lbl_created_at') }}"
                     },
                     {
+                        data: 'role_name',
+                        name: 'role_name',
+                        title: "{{ t('datatable.lbl_role') }}"
+                    },
+                    {
                         data: 'creator_name',
                         name: 'creator.name',
                         className: 'text-start',
                         title: 'بواسطة'
+                    },
+                    {
+                        data: 'actions',
+                        name: 'creator.name',
+                        className: 'text-start',
+                        title: '{{ t('datatable.lbl_actions') }}',
+                        orderable: false
                     },
                 ],
                 language: {

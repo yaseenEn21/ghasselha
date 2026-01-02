@@ -25,42 +25,6 @@
                     <!--begin:Menu link-->
 
                     @can('users.view')
-                        <a class="menu-link" href="{{ route('dashboard.admission-invites.index') }}">
-                            <span class="menu-icon">
-                                <i class="ki-duotone ki-profile-user fs-2">
-                                    <span class="path1"></span><span class="path2"></span>
-                                    <span class="path3"></span><span class="path4"></span>
-                                </i>
-                            </span>
-                            <span class="menu-title">دعوات الإلتحاق</span>
-                        </a>
-                    @endcan
-
-                    @can('users.view')
-                        <a class="menu-link" href="{{ route('dashboard.admission-applications.index') }}">
-                            <span class="menu-icon">
-                                <i class="ki-duotone ki-profile-user fs-2">
-                                    <span class="path1"></span><span class="path2"></span>
-                                    <span class="path3"></span><span class="path4"></span>
-                                </i>
-                            </span>
-                            <span class="menu-title">طلبات أولياء الأمور</span>
-                        </a>
-                    @endcan
-
-                    @can('users.view')
-                        <a class="menu-link" href="{{ route('dashboard.childrens.index') }}">
-                            <span class="menu-icon">
-                                <i class="ki-duotone ki-profile-user fs-2">
-                                    <span class="path1"></span><span class="path2"></span>
-                                    <span class="path3"></span><span class="path4"></span>
-                                </i>
-                            </span>
-                            <span class="menu-title">الأطفال</span>
-                        </a>
-                    @endcan
-
-                    @can('users.view')
                         <a class="menu-link" href="{{ route('dashboard.users.index') }}">
                             <span class="menu-icon">
                                 <i class="ki-duotone ki-profile-user fs-2">
@@ -71,135 +35,16 @@
                             <span class="menu-title">{{ t(key: 'users.title') }}</span>
                         </a>
                     @endcan
-                    @can('users.view')
-                        <a class="menu-link" href="{{ route('dashboard.parent-messages.index') }}">
-                            <span class="menu-icon">
-                                <i class="ki-duotone ki-profile-user fs-2">
-                                    <span class="path1"></span><span class="path2"></span>
-                                    <span class="path3"></span><span class="path4"></span>
-                                </i>
-                            </span>
-                            <span class="menu-title">رسائل أولياء الأمور</span>
-                        </a>
-                    @endcan
 
-                    @can('users.view')
-                        <a class="menu-link" href="{{ route('dashboard.parent-users.index') }}">
+                    @can('services.view')
+                        <a class="menu-link" href="{{ route('dashboard.services.index') }}">
                             <span class="menu-icon">
                                 <i class="ki-duotone ki-profile-user fs-2">
                                     <span class="path1"></span><span class="path2"></span>
                                     <span class="path3"></span><span class="path4"></span>
                                 </i>
                             </span>
-                            <span class="menu-title">مستخدمين التطبيق</span>
-                        </a>
-                    @endcan
-
-                    @can('users.view')
-                        <a class="menu-link" href="{{ route('dashboard.food-menus.index') }}">
-                            <span class="menu-icon">
-                                <i class="ki-duotone ki-profile-user fs-2">
-                                    <span class="path1"></span><span class="path2"></span>
-                                    <span class="path3"></span><span class="path4"></span>
-                                </i>
-                            </span>
-                            <span class="menu-title">جدول التغذية</span>
-                        </a>
-                    @endcan
-
-                    @can('users.view')
-                        <a class="menu-link" href="{{ route('dashboard.daily-schedules.index') }}">
-                            <span class="menu-icon">
-                                <i class="ki-duotone ki-profile-user fs-2">
-                                    <span class="path1"></span><span class="path2"></span>
-                                    <span class="path3"></span><span class="path4"></span>
-                                </i>
-                            </span>
-                            <span class="menu-title">الجدول اليومي</span>
-                        </a>
-                    @endcan
-
-                    @can('users.view')
-                        <a class="menu-link" href="{{ route('dashboard.announcements.index') }}">
-                            <span class="menu-icon">
-                                <i class="ki-duotone ki-profile-user fs-2">
-                                    <span class="path1"></span><span class="path2"></span>
-                                    <span class="path3"></span><span class="path4"></span>
-                                </i>
-                            </span>
-                            <span class="menu-title">الاعلانات</span>
-                        </a>
-                    @endcan
-
-                    @can('users.view')
-                        <a class="menu-link" href="{{ route('dashboard.posts.index') }}">
-                            <span class="menu-icon">
-                                <i class="ki-duotone ki-profile-user fs-2">
-                                    <span class="path1"></span><span class="path2"></span>
-                                    <span class="path3"></span><span class="path4"></span>
-                                </i>
-                            </span>
-                            <span class="menu-title">أهم اللحظات</span>
-                        </a>
-                    @endcan
-
-                    @can('users.view')
-                        <a class="menu-link" href="{{ route('dashboard.school-events.index') }}">
-                            <span class="menu-icon">
-                                <i class="ki-duotone ki-profile-user fs-2">
-                                    <span class="path1"></span><span class="path2"></span>
-                                    <span class="path3"></span><span class="path4"></span>
-                                </i>
-                            </span>
-                            <span class="menu-title">الفعاليات والإجازات</span>
-                        </a>
-                    @endcan
-
-                    @can('users.view')
-                        <a class="menu-link" href="{{ route('dashboard.app-pages.index') }}">
-                            <span class="menu-icon">
-                                <i class="ki-duotone ki-profile-user fs-2">
-                                    <span class="path1"></span><span class="path2"></span>
-                                    <span class="path3"></span><span class="path4"></span>
-                                </i>
-                            </span>
-                            <span class="menu-title">صفحات التطبيق</span>
-                        </a>
-                    @endcan
-
-                    {{-- @can('users.view')
-                        <a class="menu-link" href="{{ route('dashboard.report-templates.index') }}">
-                            <span class="menu-icon">
-                                <i class="ki-duotone ki-profile-user fs-2">
-                                    <span class="path1"></span><span class="path2"></span>
-                                    <span class="path3"></span><span class="path4"></span>
-                                </i>
-                            </span>
-                            <span class="menu-title">التقارير</span>
-                        </a>
-                    @endcan --}}
-
-                    @can('users.view')
-                        <a class="menu-link" href="{{ route('dashboard.report-templates.sections.index', ['reportTemplate' => 1]) }}">
-                            <span class="menu-icon">
-                                <i class="ki-duotone ki-profile-user fs-2">
-                                    <span class="path1"></span><span class="path2"></span>
-                                    <span class="path3"></span><span class="path4"></span>
-                                </i>
-                            </span>
-                            <span class="menu-title">التقرير اليومي</span>
-                        </a>
-                    @endcan
-
-                    @can('users.view')
-                        <a class="menu-link" href="{{ route('dashboard.child-reports.index', ['reportTemplate' => 1]) }}">
-                            <span class="menu-icon">
-                                <i class="ki-duotone ki-profile-user fs-2">
-                                    <span class="path1"></span><span class="path2"></span>
-                                    <span class="path3"></span><span class="path4"></span>
-                                </i>
-                            </span>
-                            <span class="menu-title">تقارير الأطفال</span>
+                            <span class="menu-title">{{ t(key: 'services.title') }}</span>
                         </a>
                     @endcan
                     

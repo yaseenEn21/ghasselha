@@ -49,67 +49,82 @@ window.KH.setFormLoading = function (form, isLoading, options) {
  * عرض أخطاء الفاليديشن على الحقول + ألرت عام اختياري
  * options.globalAlertSelector: مثل '#invite_create_result'
  */
-window.KH.showValidationErrors = function (form, errors, options) {
-    var $form = form instanceof jQuery ? form : $(form);
-    if (!$form.length) return;
+KH.showValidationErrors = function (form, errors, options) {
+    options = options || {};
+    const $form = $(form);
 
-    var globalSelector = options && options.globalAlertSelector ? options.globalAlertSelector : null;
-    var $globalAlert = globalSelector ? $(globalSelector) : null;
-
-    // تنظيف قديم
+    // 1) نظف الأخطاء القديمة
     $form.find('.is-invalid').removeClass('is-invalid');
-    $form.find('.invalid-feedback').text('');
+    $form.find('.invalid-feedback').text('').hide();
 
-    if ($globalAlert && $globalAlert.length) {
-        $globalAlert
-            .addClass('d-none')
-            .removeClass('alert-danger alert-success')
-            .html('');
+    if (options.globalAlertSelector) {
+        const $alert = $(options.globalAlertSelector);
+        $alert.removeClass('alert-danger alert-success').addClass('d-none').empty();
     }
 
-    if (!errors) return;
-
-    var globalMessages = [];
+    let firstMessage = null;
 
     Object.keys(errors).forEach(function (field) {
-        var messages = errors[field];
-        var $input = $form.find('[name="' + field + '"]');
-
-        // لو ما لقينا الحقل -> نخزن الرسالة للـ global
-        if (!$input.length) {
-            globalMessages = globalMessages.concat(messages);
-            return;
+        const messages = errors[field];
+        if (!firstMessage) {
+            firstMessage = messages[0];
         }
 
-        $input.addClass('is-invalid');
+        let inputName = field;
 
-        var $feedback = $input.siblings('.invalid-feedback');
-        if (!$feedback.length) {
-            $feedback = $input.closest('.mb-3, .fv-row, .form-group')
-                .find('.invalid-feedback').first();
+        // 🔁 1) حوّل name.ar → name[ar]
+        if (field.indexOf('.') !== -1) {
+            const parts = field.split('.');
+            const root = parts.shift(); // name
+            inputName = root + '[' + parts.join('][') + ']'; // name[ar]
         }
 
-        if ($feedback.length) {
-            $feedback.text(messages[0]); // أول رسالة للحقل
-        } else {
-            globalMessages = globalMessages.concat(messages);
+        let $field = $form.find('[name="' + inputName + '"]');
+
+        // 🔁 2) لو ما لقينا، جرّب شكل المصفوفة name[]
+        if (!$field.length) {
+            $field = $form.find('[name="' + inputName + '[]"]');
+        }
+
+        // 🔁 3) لو ما لقينا ولسه المفتاح فيه نقطة (زي name.ar)، جرّب نلقط أي حقل يبدأ بـ root[
+        if (!$field.length && field.indexOf('.') !== -1) {
+            const root = field.split('.')[0]; // "name"
+            const $candidates = $form.find('[name^="' + root + '[');
+            if ($candidates.length) {
+                // في حالتك غالبًا أول واحد هو name[ar]
+                $field = $candidates.first();
+            }
+        }
+
+        if ($field.length) {
+            $field.addClass('is-invalid');
+
+            const $feedback = $field.closest('.fv-row, .mb-3, .col, .form-group')
+                .find('.invalid-feedback')
+                .first();
+
+            if ($feedback.length) {
+                $feedback.text(messages[0]).show();
+            }
+        } else if (options.globalAlertSelector) {
+            // لو فعليًا مش لقينا ولا حقل، خلّي الرسالة على الأقل في الأليرت العام
+            const $alert = $(options.globalAlertSelector);
+            $alert.removeClass('d-none')
+                .addClass('alert alert-danger');
+            $alert.append('<div>' + messages[0] + '</div>');
         }
     });
 
-    // عرض الرسائل العامة في الألرت (لو موجودة)
-    if ($globalAlert && $globalAlert.length && globalMessages.length) {
-        var html = '';
-        globalMessages.forEach(function (msg) {
-            html += '<div> - ' + msg + '</div>';
-        });
-
-        $globalAlert
-            .removeClass('d-none')
-            .addClass('alert-danger')
-            .html(html);
+    // 4) أول رسالة في الأليرت العام (اختياري)
+    if (options.globalAlertSelector && firstMessage) {
+        const $alert = $(options.globalAlertSelector);
+        if (!$alert.hasClass('alert-danger')) {
+            $alert.removeClass('d-none')
+                .addClass('alert alert-danger')
+                .html('<div>' + firstMessage + '</div>');
+        }
     }
 };
-
 
 /**
  * Helper عام لتهيئة داتاتيبل AJAX + بحث خارجي + فلتر حالة + حذف بـ SweetAlert
@@ -200,14 +215,17 @@ window.KH.initAjaxDatatable = function (config) {
 
             let url = config.delete.routeTemplate.replace(':id', id);
 
+            const del = config.delete || {};
+
+            const i18n = del.i18n || {};
+
             Swal.fire({
-                title: 'هل أنت متأكد؟',
-                text: 'سيتم حذف هذا السجل نهائياً.',
+                title: i18n.title || 'Are you sure?',
+                text: i18n.text || 'This record will be permanently deleted!',
                 icon: 'warning',
                 showCancelButton: true,
-                confirmButtonText: 'نعم، حذف',
-                cancelButtonText: 'إلغاء',
-                reverseButtons: true
+                confirmButtonText: i18n.confirmButtonText || 'Yes, delete',
+                cancelButtonText: i18n.cancelButtonText || 'Cancel',
             }).then((result) => {
                 if (result.isConfirmed) {
                     $.ajax({
@@ -215,29 +233,25 @@ window.KH.initAjaxDatatable = function (config) {
                         type: 'POST',
                         data: {
                             _method: 'DELETE',
-                            _token: config.delete.token
+                            _token: del.token,
                         },
-                        success: function (res) {
-                            Swal.fire({
-                                icon: 'success',
-                                title: 'تم الحذف',
-                                text: res.message || 'تم حذف السجل بنجاح.',
-                                timer: 2000,
-                                showConfirmButton: false
-                            });
-
-                            table.ajax.reload(null, false);
-                        },
-                        error: function (xhr) {
-                            let msg = 'حدث خطأ غير متوقع.';
-                            if (xhr.responseJSON && xhr.responseJSON.message) {
-                                msg = xhr.responseJSON.message;
+                        success: function () {
+                            Swal.fire(
+                                i18n.successTitle || 'Deleted',
+                                i18n.successText || 'The record has been deleted successfully.',
+                                'success'
+                            );
+                            // إعادة تحميل الجدول
+                            if (options.tableId && $.fn.DataTable.isDataTable('#' + options.tableId)) {
+                                $('#' + options.tableId).DataTable().ajax.reload(null, false);
                             }
-                            Swal.fire({
-                                icon: 'error',
-                                title: 'خطأ',
-                                text: msg
-                            });
+                        },
+                        error: function () {
+                            Swal.fire(
+                                i18n.errorTitle || 'Error',
+                                i18n.errorText || 'An error occurred while deleting.',
+                                'error'
+                            );
                         }
                     });
                 }

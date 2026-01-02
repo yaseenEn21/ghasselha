@@ -33,6 +33,21 @@ class Service extends Model implements HasMedia
         'description' => 'array',
     ];
 
+    public function registerMediaCollections(): void
+    {
+        $this->addMediaCollection('image_ar')->singleFile();
+        $this->addMediaCollection('image_en')->singleFile();
+    }
+
+    public function getImageUrl(string $locale = 'ar'): ?string
+    {
+        $collection = $locale === 'en' ? 'image_en' : 'image_ar';
+
+        $url = $this->getFirstMediaUrl($collection);
+
+        return $url ?: null;
+    }
+
     public function category()
     {
         return $this->belongsTo(ServiceCategory::class, 'service_category_id');
@@ -42,11 +57,6 @@ class Service extends Model implements HasMedia
     {
         return $this->belongsToMany(User::class, 'service_user', 'service_id', 'user_id')
             ->withTimestamps();
-    }
-
-    public function registerMediaCollections(): void
-    {
-        $this->addMediaCollection('image')->singleFile();
     }
 
     protected static function booted(): void
