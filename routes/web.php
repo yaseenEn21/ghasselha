@@ -4,6 +4,7 @@ use App\Http\Controllers\Dashboard\HomeController;
 use App\Http\Controllers\Dashboard\RoleController;
 use App\Http\Controllers\Dashboard\UserController;
 use App\Http\Controllers\Dashboard\ServiceController;
+use App\Http\Controllers\Dashboard\PackageController;
 use App\Http\Controllers\ProfileController;
 
 Route::get('/', function () {
@@ -30,6 +31,8 @@ Route::middleware(['auth'])->group(function () {
         // services
         Route::resource('services', ServiceController::class);
 
+        // packages
+        Route::resource('packages', PackageController::class);
     });
 
 });

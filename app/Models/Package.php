@@ -1,10 +1,11 @@
 <?php
 
+// app/Models/Package.php
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
-
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 
@@ -52,6 +53,24 @@ class Package extends Model implements HasMedia
     public function registerMediaCollections(): void
     {
         $this->addMediaCollection('image')->singleFile();
+    }
+
+    public function getImageUrl(): ?string
+    {
+        $url = $this->getFirstMediaUrl('image');
+        return $url ?: null;
+    }
+
+    public function getNameForLocale(?string $locale = null): string
+    {
+        $locale = $locale ?: app()->getLocale();
+        return $this->name[$locale] ?? $this->name['ar'] ?? $this->name['en'] ?? '—';
+    }
+
+    public function getDescriptionForLocale(?string $locale = null): string
+    {
+        $locale = $locale ?: app()->getLocale();
+        return $this->description[$locale] ?? $this->description['ar'] ?? $this->description['en'] ?? '';
     }
 
     protected static function booted(): void

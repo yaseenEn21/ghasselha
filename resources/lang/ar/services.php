@@ -44,6 +44,7 @@ return [
     'status' => 'الحالة',
     'active' => 'مفعّلة',
     'inactive' => 'غير مفعّلة',
+    'sort_order' => 'ترتيب الظهور',
 
     // رسائل النظام
     'created_successfully' => 'تم إنشاء الخدمة بنجاح.',

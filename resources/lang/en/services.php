@@ -32,6 +32,8 @@ return [
     'discount_price' => 'Discounted price (optional)',
     'price_placeholder' => '0.00',
     'minutes_suffix' => 'min',
+    'sort_order' => 'Display order',
+
 
     // Images
     'image_ar' => 'Service image (AR)',

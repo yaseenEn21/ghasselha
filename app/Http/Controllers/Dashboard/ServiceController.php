@@ -33,11 +33,12 @@ class ServiceController extends Controller
     {
 
         if ($request->ajax()) {
+            
             $query = Service::query()
                 ->with('category')
-                ->select('services.*');
+                ->select('services.*')
+                ->orderBy('sort_order');     
 
-            // 🔍 البحث بالاسم (JSON name->ar / name->en)
             if ($search = $request->get('search_custom')) {
                 $search = trim($search);
                 $query->where(function ($q) use ($search) {
@@ -46,12 +47,10 @@ class ServiceController extends Controller
                 });
             }
 
-            // 🎛 فلتر التصنيف
             if ($categoryId = $request->get('category_id')) {
                 $query->where('service_category_id', $categoryId);
             }
 
-            // 🎛 فلتر الحالة
             if ($status = $request->get('status')) {
                 if ($status === 'active') {
                     $query->where('is_active', true);
@@ -165,11 +164,22 @@ class ServiceController extends Controller
             'price' => ['required', 'numeric', 'min:0'],
             'discounted_price' => ['nullable', 'numeric', 'min:0'],
             'is_active' => ['nullable', 'boolean'],
+            'sort_order' => ['nullable', 'integer', 'min:1'],
 
             // 👇 جديد
             'image_ar' => ['nullable', 'image', 'mimes:jpeg,jpg,png,webp', 'max:2048'],
             'image_en' => ['nullable', 'image', 'mimes:jpeg,jpg,png,webp', 'max:2048'],
         ]);
+
+        $desiredPosition = $data['sort_order'] ?? null;
+
+        if ($desiredPosition) {
+            Service::where('sort_order', '>=', $desiredPosition)
+                ->increment('sort_order');
+        } else {
+            $max = Service::max('sort_order') ?? 0;
+            $desiredPosition = $max + 1;
+        }
 
         $payload = [
             'service_category_id' => $data['service_category_id'],
@@ -179,11 +189,11 @@ class ServiceController extends Controller
             'price' => $data['price'],
             'discounted_price' => $data['discounted_price'] ?? null,
             'is_active' => $request->boolean('is_active', true),
+            'sort_order' => $desiredPosition
         ];
 
         $service = Service::create($payload);
 
-        // 🖼️ حفظ الصور لو مرفوعة
         if ($request->hasFile('image_ar')) {
             $service->addMediaFromRequest('image_ar')->toMediaCollection('image_ar');
         }
@@ -239,10 +249,28 @@ class ServiceController extends Controller
             'price' => ['required', 'numeric', 'min:0'],
             'discounted_price' => ['nullable', 'numeric', 'min:0'],
             'is_active' => ['nullable', 'boolean'],
+            'sort_order' => ['nullable', 'integer', 'min:1'],
 
             'image_ar' => ['nullable', 'image', 'mimes:jpeg,jpg,png,webp', 'max:2048'],
             'image_en' => ['nullable', 'image', 'mimes:jpeg,jpg,png,webp', 'max:2048'],
         ]);
+
+        $oldPosition = $service->sort_order ?? (Service::max('sort_order') + 1);
+        $newPosition = $data['sort_order'] ?? $oldPosition;
+
+        if ($newPosition != $oldPosition) {
+            if ($newPosition < $oldPosition) {
+                Service::where('id', '!=', $service->id)
+                    ->whereNotNull('sort_order')
+                    ->whereBetween('sort_order', [$newPosition, $oldPosition - 1])
+                    ->increment('sort_order');
+            } else {
+                Service::where('id', '!=', $service->id)
+                    ->whereNotNull('sort_order')
+                    ->whereBetween('sort_order', [$oldPosition + 1, $newPosition])
+                    ->decrement('sort_order');
+            }
+        }
 
         $payload = [
             'service_category_id' => $data['service_category_id'],
@@ -252,11 +280,11 @@ class ServiceController extends Controller
             'price' => $data['price'],
             'discounted_price' => $data['discounted_price'] ?? null,
             'is_active' => $request->boolean('is_active', true),
+            'sort_order' => $newPosition,
         ];
 
         $service->update($payload);
 
-        // 🖼️ لو أرسل صور جديدة، singleFile() حيستبدل القديمة تلقائيًا
         if ($request->hasFile('image_ar')) {
             $service->addMediaFromRequest('image_ar')->toMediaCollection('image_ar');
         }

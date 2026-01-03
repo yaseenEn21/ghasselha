@@ -34,6 +34,7 @@ class DatabaseSeeder extends Seeder
             PromotionsTestSeeder::class,
             PointsSettingsSeeder::class,
             PointsTestSeeder::class,
+            PermissionsSeeder::class
         ]);
     }
 }

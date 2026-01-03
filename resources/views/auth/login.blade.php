@@ -12,12 +12,14 @@
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inter:300,400,500,600,700" />
 
     <!-- Global Stylesheets Bundle -->
-    {{-- <link href="{{ asset('assets/plugins/global/plugins.bundle.css') }}" rel="stylesheet" type="text/css" /> --}}
     <link href="{{ asset('assets/css/style.bundle.css') }}" rel="stylesheet" type="text/css" />
 
     <style>
-        .btn-danger {
-            background-color: rgba(239, 35, 60, 1) !important;
+        .btn-submit {
+            background-color: rgba(43, 55, 132, 1) !important;
+        }
+        .btn-submit:hover {
+            background-color: rgba(43, 55, 132, 0.8) !important;
         }
     </style>
 
@@ -102,8 +104,7 @@
 
                                 <!-- Logo -->
                                 <div class="mb-10 text-center">
-                                    <img alt="Logo" src="{{ asset('assets/media/logos/kids-hotel-logo.svg') }}"
-                                            class="h-150px" />
+                                    <img alt="Logo" src="{{ asset('assets/media/logos/logo.webp') }}" />
                                 </div>
 
                                 <!-- Heading -->
@@ -160,7 +161,7 @@
 
                                 <!-- Submit button -->
                                 <div class="d-grid mb-10">
-                                    <button type="submit" class="btn btn-danger">
+                                    <button type="submit" class="btn btn-submit text-white">
                                         <span class="indicator-label">تسجيل الدخول</span>
                                     </button>
                                 </div>

@@ -47,6 +47,18 @@
                             <span class="menu-title">{{ t(key: 'services.title') }}</span>
                         </a>
                     @endcan
+
+                    @can('packages.view')
+                        <a class="menu-link" href="{{ route('dashboard.packages.index') }}">
+                            <span class="menu-icon">
+                                <i class="ki-duotone ki-profile-user fs-2">
+                                    <span class="path1"></span><span class="path2"></span>
+                                    <span class="path3"></span><span class="path4"></span>
+                                </i>
+                            </span>
+                            <span class="menu-title">{{ t(key: 'packages.title') }}</span>
+                        </a>
+                    @endcan
                     
                     @can('roles.view')
                         <a class="menu-link" href="{{ route('dashboard.roles.index') }}">

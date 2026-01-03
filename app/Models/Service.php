@@ -18,6 +18,7 @@ class Service extends Model implements HasMedia
         'description',
         'duration_minutes',
         'price',
+        'sort_order',
         'discounted_price',
         'is_active',
         'created_by',
@@ -31,6 +32,7 @@ class Service extends Model implements HasMedia
         'is_active' => 'boolean',
         'name' => 'array',
         'description' => 'array',
+        'sort_order' => 'integer'
     ];
 
     public function registerMediaCollections(): void

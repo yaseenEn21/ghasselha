@@ -116,6 +116,11 @@
                 object-fit: cover;
                 display: block;
             }
+
+            .image-input-wrapper{
+                background-position: center center;
+                background-size: cover;
+            }
         </style>
     @else
         <link href="{{ asset('assets/plugins/custom/datatables/datatables.bundle.css') }}" rel="stylesheet"
