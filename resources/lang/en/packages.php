@@ -62,4 +62,40 @@ return [
     'search_by_name'       => 'Search by name',
     'search_by_name_placeholder' => 'Search by package name',
     'all_statuses'         => 'All',
+
+    'show' => 'View Package',
+
+    'basic_price' => 'Base Price',
+    'discounted_price' => 'Discounted Price',
+    'final_price' => 'Final Display Price',
+    'sort_order' => 'Display order',
+
+    'created_at' => 'Created at',
+    'updated_at' => 'Last updated',
+
+    'package_details' => 'Package details',
+    'package_details_hint' => 'Overview of package properties and pricing',
+
+    'subscriptions_stats' => 'Subscription status',
+    'total_subscriptions' => 'Total subscriptions',
+    'unique_customers' => 'Subscribed unique customers',
+
+    'status_active' => 'Active',
+    'status_expired' => 'Expired',
+    'status_cancelled' => 'Cancelled',
+
+    'package_description' => 'Package description',
+
+    'services_in_package' => 'Services inside the package',
+    'services_in_package_hint' => 'Order of services as they appear to the customer',
+
+    'no_services' => 'No services added to this package yet.',
+
+    'service' => 'Service',
+    'category' => 'Category',
+    'duration' => 'Duration',
+    'order_inside_package' => 'Order inside package',
+
+    'minutes_suffix' => 'min',
+    'currency_suffix' => 'SAR',
 ];

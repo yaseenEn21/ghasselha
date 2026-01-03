@@ -10,8 +10,8 @@
 
 @php
     $locale = app()->getLocale();
-    $imageArUrl = $service->getFirstMediaUrl('image_ar') ?: asset('assets/media/svg/files/blank-image.svg');
-    $imageEnUrl = $service->getFirstMediaUrl('image_en') ?: asset('assets/media/svg/files/blank-image.svg');
+    $imageArUrl = $package->getFirstMediaUrl('image_ar') ?: asset('assets/media/svg/files/blank-image.svg');
+    $imageEnUrl = $package->getFirstMediaUrl('image_en') ?: asset('assets/media/svg/files/blank-image.svg');
 
     $nameAr = old('name.ar', $package->name['ar'] ?? '');
     $nameEn = old('name.en', $package->name['en'] ?? '');

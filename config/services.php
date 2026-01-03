@@ -60,5 +60,8 @@ return [
         'callback_url' => env('MOYASAR_CALLBACK_URL'),
     ],
 
+    'google_maps' => [
+        'key' => env('GOOGLE_MAPS_API_KEY'),
+    ],
 
 ];

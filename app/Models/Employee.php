@@ -11,7 +11,7 @@ class Employee extends Model
 
     protected $fillable = ['user_id', 'is_active', 'created_by', 'updated_by'];
 
-    protected $casts = ['is_active' => 'boolean'];
+    protected $casts = ['is_active' => 'boolean', 'polygon' => 'array'];
 
     public function user() { return $this->belongsTo(User::class); }
 
@@ -36,4 +36,5 @@ class Employee extends Model
     {
         return $this->hasOne(EmployeeWorkArea::class);
     }
+
 }

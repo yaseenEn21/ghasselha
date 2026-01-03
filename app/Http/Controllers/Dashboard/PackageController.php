@@ -16,6 +16,7 @@ class PackageController extends Controller
 
     public function __construct()
     {
+
         $this->middleware('can:packages.view')->only(['index', 'show']);
         $this->middleware('can:packages.create')->only(['create', 'store']);
         $this->middleware('can:packages.edit')->only(['edit', 'update']);
@@ -83,30 +84,9 @@ class PackageController extends Controller
                 })
                 ->editColumn('created_at', fn(Package $row) => optional($row->created_at)->format('Y-m-d'))
                 ->addColumn('actions', function (Package $row) {
-                    $editUrl = route('dashboard.packages.edit', $row->id);
-                    $canEdit = auth()->user()->can('packages.edit') ?? true;
-                    $canDelete = auth()->user()->can('packages.delete') ?? true;
-
-                    $html = '<div class="d-flex gap-2">';
-
-                    if ($canEdit) {
-                        $html .= '<a href="' . $editUrl . '" class="btn btn-sm btn-light-warning">'
-                            . e(__('packages.edit')) . '</a>';
-                    }
-
-                    if ($canDelete) {
-                        $html .= '
-                            <button type="button"
-                                class="btn btn-sm btn-light-danger js-delete-package"
-                                data-id="' . $row->id . '">
-                                ' . e(__('packages.delete')) . '
-                            </button>
-                        ';
-                    }
-
-                    $html .= '</div>';
-
-                    return $html;
+                    return view('dashboard.packages._actions', [
+                        'package' => $row,
+                    ])->render();
                 })
                 ->rawColumns(['is_active_badge', 'actions'])
                 ->make(true);
@@ -169,11 +149,11 @@ class PackageController extends Controller
 
             // 🖼️ صورة
             if ($request->hasFile('image_ar')) {
-                $package->addMediaFromRequest('image_ar')->toMediaCollection('image');
+                $package->addMediaFromRequest('image_ar')->toMediaCollection('image_ar');
             }
 
             if ($request->hasFile('image_en')) {
-                $package->addMediaFromRequest('image_en')->toMediaCollection('image');
+                $package->addMediaFromRequest('image_en')->toMediaCollection('image_en');
             }
 
             // 🔗 الخدمات داخل الباقة مع sort_order في pivot
@@ -202,15 +182,15 @@ class PackageController extends Controller
             ->with('success', __('packages.created_successfully'));
     }
 
-    // public function show(Package $package)
-    // {
-    //     $package->load([
-    //         'services.category',
-    //         'subscriptions',
-    //     ]);
+    public function show(Package $package)
+    {
+        $package->load([
+            'services.category',
+            'subscriptions',
+        ]);
 
-    //     return view('dashboard.packages.show', compact('package'));
-    // }
+        return view('dashboard.packages.show', compact('package'));
+    }
 
     public function edit(Package $package)
     {

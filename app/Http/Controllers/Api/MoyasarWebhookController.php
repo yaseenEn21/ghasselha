@@ -36,7 +36,7 @@ class MoyasarWebhookController extends Controller
 
         // أفضل ربط: metadata.local_payment_id
         $localPaymentId = $data['metadata']['local_payment_id'] ?? null;
-
+        
         /** @var Payment|null $payment */
         $payment = null;
 
@@ -65,7 +65,7 @@ class MoyasarWebhookController extends Controller
             DB::transaction(function () use ($payment, $data, $gatewayPaymentId, $svc) {
 
                 $amountPaid = ((int) ($data['amount'] ?? 0)) / 100; // halalas -> SAR
-
+                
                 if ($amountPaid == $payment->amount) {
 
                     $payment->update([
