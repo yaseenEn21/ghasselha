@@ -16,16 +16,6 @@ return new class extends Migration {
             $table->json('name');                 // {"ar":"...","en":"..."}
             $table->json('description')->nullable();
 
-            // نطاق التطبيق
-            $table->enum('applies_to', ['service', 'package', 'both'])->default('both');
-            $table->boolean('apply_all_services')->default(false);
-            $table->boolean('apply_all_packages')->default(false);
-
-            // نوع الخصم
-            $table->enum('discount_type', ['percent', 'fixed'])->default('percent');
-            $table->decimal('discount_value', 10, 2)->default(0); // 10% أو 20 SAR
-            $table->decimal('max_discount', 10, 2)->nullable();   // سقف للخصم
-
             $table->date('starts_at')->nullable();
             $table->date('ends_at')->nullable();
 

@@ -22,6 +22,16 @@ return new class extends Migration {
             $table->date('starts_at')->nullable();
             $table->date('ends_at')->nullable();
 
+             // نطاق التطبيق
+            $table->enum('applies_to', ['service', 'package', 'both'])->default('both');
+            $table->boolean('apply_all_services')->default(false);
+            $table->boolean('apply_all_packages')->default(false);
+
+            // نوع الخصم
+            $table->enum('discount_type', ['percent', 'fixed'])->default('percent');
+            $table->decimal('discount_value', 10, 2)->default(0); // 10% أو 20 SAR
+
+
             // حدود الاستخدام
             $table->unsignedInteger('usage_limit_total')->nullable();     // إجمالي
             $table->unsignedInteger('usage_limit_per_user')->nullable();  // لكل مستخدم

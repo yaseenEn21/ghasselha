@@ -10,14 +10,14 @@ return new class extends Migration {
      */
     public function up(): void
     {
-        Schema::create('promotion_packages', function (Blueprint $table) {
+        Schema::create('promotion_coupon_packages', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('promotion_id')->constrained('promotions')->cascadeOnDelete();
+            $table->foreignId('promotion_coupon_id')->constrained('promotion_coupons')->cascadeOnDelete();
             $table->foreignId('package_id')->constrained('packages')->cascadeOnDelete();
             $table->boolean('is_active')->default(true);
             $table->timestamps();
 
-            $table->unique(['promotion_id', 'package_id']);
+            $table->unique(['promotion_coupon_id', 'package_id']);
         });
 
     }

@@ -15,11 +15,11 @@ class InvoiceCouponController extends Controller
     public function preview(InvoiceCouponRequest $request, Invoice $invoice, CouponService $couponService)
     {
         $user = $request->user();
-        if (!$user)
-            return api_error('Unauthenticated', 401);
+        if (!$user) return api_error('Unauthenticated', 401);
 
-        if ($invoice->user_id !== $user->id)
+        if ((int)$invoice->user_id !== (int)$user->id) {
             return api_error('Not found', 404);
+        }
 
         $result = $couponService->preview($invoice, $user, $request->input('code'));
 
@@ -42,11 +42,11 @@ class InvoiceCouponController extends Controller
     public function apply(InvoiceCouponRequest $request, Invoice $invoice, CouponService $couponService)
     {
         $user = $request->user();
-        if (!$user)
-            return api_error('Unauthenticated', 401);
+        if (!$user) return api_error('Unauthenticated', 401);
 
-        if ($invoice->user_id !== $user->id)
+        if ((int)$invoice->user_id !== (int)$user->id) {
             return api_error('Not found', 404);
+        }
 
         $result = $couponService->apply($invoice, $user, $request->input('code'), $user->id);
 
@@ -60,8 +60,7 @@ class InvoiceCouponController extends Controller
     public function destroy(Request $request, Invoice $invoice, CouponService $couponService)
     {
         $user = $request->user();
-        if (!$user)
-            return api_error('Unauthenticated', 401);
+        if (!$user) return api_error('Unauthenticated', 401);
 
         $result = $couponService->removeCoupon($invoice, $user, $user->id);
 
@@ -71,5 +70,4 @@ class InvoiceCouponController extends Controller
 
         return api_success(new InvoiceResource($result['invoice']), 'Coupon removed successfully');
     }
-
 }

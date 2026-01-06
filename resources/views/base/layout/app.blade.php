@@ -63,6 +63,10 @@
                 left: 1.25rem !important;
             }
             
+            .select2-container--bootstrap5 .select2-selection--multiple .select2-selection__rendered .select2-selection__choice .select2-selection__choice__remove {
+                right: unset !important;
+                left: 5px !important;
+            }
             /* #kt_datatable_zero_configuration thead th,
             #kt_datatable_zero_configuration tbody td {
                 text-align: right !important;

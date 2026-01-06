@@ -10,20 +10,18 @@ class Promotion extends Model
     use SoftDeletes;
 
     protected $fillable = [
-        'name','description',
-        'applies_to','apply_all_services','apply_all_packages',
-        'discount_type','discount_value','max_discount',
-        'starts_at','ends_at','is_active',
-        'created_by','updated_by',
+        'name',
+        'description',
+        'starts_at',
+        'ends_at',
+        'is_active',
+        'created_by',
+        'updated_by',
     ];
 
     protected $casts = [
         'name' => 'array',
         'description' => 'array',
-        'apply_all_services' => 'boolean',
-        'apply_all_packages' => 'boolean',
-        'discount_value' => 'decimal:2',
-        'max_discount' => 'decimal:2',
         'starts_at' => 'date',
         'ends_at' => 'date',
         'is_active' => 'boolean',
@@ -34,17 +32,19 @@ class Promotion extends Model
         return $this->hasMany(PromotionCoupon::class);
     }
 
-    public function services()
+    protected static function booted(): void
     {
-        return $this->belongsToMany(Service::class, 'promotion_services')
-            ->withPivot('is_active')
-            ->withTimestamps();
-    }
+        static::creating(function ($model) {
+            if (auth()->check()) {
+                $model->created_by = $model->created_by ?? auth()->id();
+                $model->updated_by = $model->updated_by ?? auth()->id();
+            }
+        });
 
-    public function packages()
-    {
-        return $this->belongsToMany(Package::class, 'promotion_packages')
-            ->withPivot('is_active')
-            ->withTimestamps();
+        static::updating(function ($model) {
+            if (auth()->check()) {
+                $model->updated_by = auth()->id();
+            }
+        });
     }
 }

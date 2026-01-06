@@ -9,5 +9,7 @@ return [
   'employees' => ['create', 'edit', 'delete', 'view'],
   'points'   => ['create', 'edit', 'delete', 'view'],
   'wallets'   => ['create', 'edit', 'delete', 'view'],
+  'promotions'   => ['create', 'edit', 'delete', 'view'],
+  'promotion_coupons'   => ['create', 'edit', 'delete', 'view'],
   'bikers'   => ['create', 'edit', 'delete', 'view'],
 ];

@@ -10,6 +10,8 @@ use App\Http\Controllers\Dashboard\PackageController;
 use App\Http\Controllers\Dashboard\PackageSubscriptionController;
 use App\Http\Controllers\Dashboard\PointController;
 use App\Http\Controllers\Dashboard\WalletController;
+use App\Http\Controllers\Dashboard\PromotionController;
+use App\Http\Controllers\Dashboard\PromotionCouponController;
 use App\Http\Controllers\ProfileController;
 
 Route::get('/', function () {
@@ -61,6 +63,51 @@ Route::middleware(['auth'])->group(function () {
             Route::get('wallet-info/{user}', [WalletController::class, 'walletInfo'])->name('wallet_info');
 
         });
+
+
+
+        // Promotions
+        Route::get('promotions/datatable', [PromotionController::class, 'datatable'])->name('promotions.datatable');
+        Route::get('promotions/search/services', [PromotionController::class, 'searchServices'])->name('promotions.search.services');
+        Route::get('promotions/search/packages', [PromotionController::class, 'searchPackages'])->name('promotions.search.packages');
+        Route::resource('promotions', PromotionController::class);
+
+        // Coupons (edit/update/delete) + Redemptions
+        Route::get('promotion-coupons/{coupon}/edit', [PromotionCouponController::class, 'edit'])->name('promotion_coupons.edit');
+        Route::put('promotion-coupons/{coupon}', [PromotionCouponController::class, 'update'])->name('promotion_coupons.update');
+        Route::delete('promotion-coupons/{coupon}', [PromotionCouponController::class, 'destroy'])->name('promotion_coupons.destroy');
+
+        Route::get('promotion-coupons/{coupon}/redemptions', [PromotionCouponController::class, 'redemptions'])->name('promotion_coupons.redemptions');
+        Route::get('promotion-coupons/{coupon}/redemptions/datatable', [PromotionCouponController::class, 'redemptionsDatatable'])->name('promotion_coupons.redemptions.datatable');
+
+        // ===== Coupons =====
+        Route::get('promotions/{promotion}/coupons', [PromotionCouponController::class, 'index'])
+            ->name('promotions.coupons.index');
+
+        Route::get('promotions/{promotion}/coupons/datatable', [PromotionCouponController::class, 'datatable'])
+            ->name('promotions.coupons.datatable');
+
+        Route::get('promotions/{promotion}/coupons/create', [PromotionCouponController::class, 'create'])
+            ->name('promotions.coupons.create');
+
+        Route::post('promotions/{promotion}/coupons', [PromotionCouponController::class, 'store'])
+            ->name('promotions.coupons.store');
+
+        Route::get('promotions/{promotion}/coupons/{coupon}/edit', [PromotionCouponController::class, 'edit'])
+            ->name('promotions.coupons.edit');
+
+        Route::put('promotions/{promotion}/coupons/{coupon}', [PromotionCouponController::class, 'update'])
+            ->name('promotions.coupons.update');
+
+        Route::delete('promotions/{promotion}/coupons/{coupon}', [PromotionCouponController::class, 'destroy'])
+            ->name('promotions.coupons.destroy');
+
+        // ===== Redemptions =====
+        Route::get('promotions/{promotion}/coupons/{coupon}/redemptions', [PromotionCouponController::class, 'redemptions'])
+            ->name('promotions.coupons.redemptions');
+
+        Route::get('promotions/{promotion}/coupons/{coupon}/redemptions/datatable', [PromotionCouponController::class, 'redemptionsDatatable'])
+            ->name('promotions.coupons.redemptions.datatable');
 
     });
 
