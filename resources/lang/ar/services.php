@@ -62,6 +62,36 @@ return [
     'search_by_name' => 'البحث بالاسم',
     'search_by_name_placeholder' => 'ابحث باسم الخدمة',
     'all_categories' => 'كل التصنيفات',
-    'all_statuses' => 'الكل'
+    'all_statuses' => 'الكل',
+
+    'service_details' => 'تفاصيل الخدمة',
+    'pricing' => 'التسعير',
+    'sales_lines' => 'سجل المبيعات',
+    'sales_stats' => 'إحصائيات المبيعات',
+
+    'booking_id' => 'رقم الحجز',
+    'booking_date' => 'تاريخ الحجز',
+    'time' => 'الوقت',
+    'pricing_source' => 'مصدر التسعير',
+    'final_price' => 'سعر الخدمة بالحجز',
+    'created_at' => 'تاريخ الإنشاء',
+
+    'total_sales_count' => 'عدد المبيعات',
+    'total_sales_amount' => 'إجمالي المبيعات',
+    'sales_note_completed_only' => 'يتم احتساب الحجوزات المكتملة فقط، واستبعاد الحجوزات المغطّاة بباقة.',
+
+    'filters' => [
+        'from' => 'من',
+        'to' => 'إلى',
+        'apply' => 'تطبيق',
+    ],
+
+    'pricing_sources' => [
+        'base' => 'أساسي',
+        'zone' => 'حسب المنطقة',
+        'group' => 'حسب المجموعة',
+        'package' => 'باقة',
+    ],
+
 
 ];

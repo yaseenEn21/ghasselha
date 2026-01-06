@@ -53,6 +53,16 @@
                 font-family: 'Cairo', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif !important;
             }
 
+            .select2-container--bootstrap5 .select2-selection__clear {
+                right: unset !important;
+                left: 3rem !important;
+            }
+
+            .select2-container--bootstrap5 .select2-dropdown .select2-results__option.select2-results__option--selected:after {
+                right: unset !important;
+                left: 1.25rem !important;
+            }
+            
             /* #kt_datatable_zero_configuration thead th,
             #kt_datatable_zero_configuration tbody td {
                 text-align: right !important;

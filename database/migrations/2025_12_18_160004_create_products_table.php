@@ -21,6 +21,7 @@ return new class extends Migration {
             $table->json('name');               // i18n
             $table->json('description')->nullable(); // i18n
 
+            $table->decimal('cost', 10, 2)->default(0);
             $table->decimal('price', 10, 2)->default(0);
             $table->decimal('discounted_price', 10, 2)->nullable();
 

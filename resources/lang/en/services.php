@@ -64,4 +64,34 @@ return [
     'search_by_name_placeholder' => 'Search by service name',
     'all_categories' => 'All categories',
     'all_statuses' => 'All',
+
+    'service_details' => 'Service details',
+    'pricing' => 'Pricing',
+    'sales_lines' => 'Sales log',
+    'sales_stats' => 'Sales stats',
+
+    'booking_id' => 'Booking #',
+    'booking_date' => 'Booking date',
+    'time' => 'Time',
+    'pricing_source' => 'Pricing source',
+    'final_price' => 'Service price (snapshot)',
+    'created_at' => 'Created at',
+
+    'total_sales_count' => 'Sales count',
+    'total_sales_amount' => 'Total sales',
+    'sales_note_completed_only' => 'Only completed bookings are counted, package-covered bookings are excluded.',
+
+    'filters' => [
+        'from' => 'From',
+        'to' => 'To',
+        'apply' => 'Apply',
+    ],
+
+    'pricing_sources' => [
+        'base' => 'Base',
+        'zone' => 'Zone',
+        'group' => 'Group',
+        'package' => 'Package',
+    ],
+
 ];

@@ -3,10 +3,13 @@
 namespace App\Http\Controllers\Dashboard;
 
 use App\Http\Controllers\Controller;
+use App\Models\Booking;
 use App\Models\Service;
 use App\Models\ServiceCategory;
 use Illuminate\Http\Request;
 use Yajra\DataTables\DataTables;
+use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
 
 class ServiceController extends Controller
 {
@@ -15,7 +18,7 @@ class ServiceController extends Controller
 
     public function __construct()
     {
-        $this->middleware('can:services.view')->only(['index', 'show']);
+        $this->middleware('can:services.view')->only(['index', 'show', 'salesLinesDatatable', 'salesStats']);
         $this->middleware('can:services.create')->only(['create', 'store']);
         $this->middleware('can:services.edit')->only(['edit', 'update']);
         $this->middleware('can:services.delete')->only(['destroy']);
@@ -33,11 +36,11 @@ class ServiceController extends Controller
     {
 
         if ($request->ajax()) {
-            
+
             $query = Service::query()
                 ->with('category')
                 ->select('services.*')
-                ->orderBy('sort_order');     
+                ->orderBy('sort_order');
 
             if ($search = $request->get('search_custom')) {
                 $search = trim($search);
@@ -100,30 +103,7 @@ class ServiceController extends Controller
                 })
                 ->editColumn('created_at', fn(Service $row) => optional($row->created_at)->format('Y-m-d'))
                 ->addColumn('actions', function (Service $row) {
-                    $editUrl = route('dashboard.services.edit', $row->id);
-                    $canEdit = auth()->user()->can('services.edit');
-                    $canDelete = auth()->user()->can('services.delete');
-
-                    $html = '<div class="d-flex gap-2">';
-
-                    if ($canEdit) {
-                        $html .= '<a href="' . $editUrl . '" class="btn btn-sm btn-light-warning">'
-                            . e(__('services.edit')) . '</a>';
-                    }
-
-                    if ($canDelete) {
-                        $html .= '
-                        <button type="button"
-                            class="btn btn-sm btn-light-danger js-delete-service"
-                            data-id="' . $row->id . '">
-                            ' . e(__('services.delete')) . '
-                        </button>
-                    ';
-                    }
-
-                    $html .= '</div>';
-
-                    return $html;
+                    return view('dashboard.services._actions', ['service' => $row])->render();
                 })
                 ->rawColumns(['is_active_badge', 'actions'])
                 ->make(true);
@@ -215,12 +195,6 @@ class ServiceController extends Controller
             ->with('success', 'تم إنشاء الخدمة بنجاح.');
     }
 
-    public function show(Service $service)
-    {
-        return null;
-        // return view('dashboard.services.show', compact('service'));
-    }
-
     public function edit(Service $service)
     {
 
@@ -304,6 +278,121 @@ class ServiceController extends Controller
         return redirect()
             ->route('dashboard.services.index')
             ->with('success', 'تم تحديث بيانات الخدمة بنجاح.');
+    }
+
+    public function show(Service $service, Request $request)
+    {
+        [$fromDate, $toDate, $from, $to] = $this->resolveBookingDateRange($request);
+
+        $base = Booking::query()
+            ->where('service_id', $service->id)
+            ->where('status', 'completed')
+            ->where('service_pricing_source', '!=', 'package')
+            ->whereBetween('booking_date', [$fromDate->toDateString(), $toDate->toDateString()]);
+
+        $totalCount = (int) $base->count();
+        $totalSales = (float) $base->sum('service_final_price_snapshot');
+
+        // title
+        $this->title = t('services.view');
+        $this->page_title = $this->title;
+
+        view()->share([
+            'title' => $this->page_title,
+            'page_title' => $this->page_title,
+        ]);
+
+        return view('dashboard.services.show', compact(
+            'service',
+            'from',
+            'to',
+            'totalCount',
+            'totalSales'
+        ));
+    }
+
+    public function salesLinesDatatable(Service $service, DataTables $datatable, Request $request)
+    {
+        [$fromDate, $toDate] = $this->resolveBookingDateRange($request);
+
+        $query = Booking::query()
+            ->where('service_id', $service->id)
+            ->where('status', 'completed')
+            ->where('service_pricing_source', '!=', 'package')
+            ->whereBetween('booking_date', [$fromDate->toDateString(), $toDate->toDateString()])
+            ->select([
+                'id',
+                'booking_date',
+                'start_time',
+                'end_time',
+                'service_pricing_source',
+                'service_final_price_snapshot',
+                'created_at',
+            ]);
+
+        return $datatable->eloquent($query)
+            ->addIndexColumn()
+            ->addColumn('booking_id', fn($row) => '#' . $row->id)
+            ->addColumn('time', fn($row) => substr($row->start_time, 0, 5) . ' - ' . substr($row->end_time, 0, 5))
+            ->addColumn('pricing_source', function ($row) {
+                $key = 'services.pricing_sources.' . $row->service_pricing_source;
+                $label = __($key);
+
+                $map = [
+                    'base' => 'badge-light-primary',
+                    'zone' => 'badge-light-info',
+                    'group' => 'badge-light-warning',
+                    'package' => 'badge-light-success',
+                ];
+
+                $cls = $map[$row->service_pricing_source] ?? 'badge-light';
+                return '<span class="badge ' . $cls . '">' . $label . '</span>';
+            })
+            ->addColumn('final_price', fn($row) => number_format((float) $row->service_final_price_snapshot, 2))
+            ->editColumn('booking_date', fn($row) => Carbon::parse($row->booking_date)->format('Y-m-d'))
+            ->editColumn('created_at', fn($row) => optional($row->created_at)->format('Y-m-d'))
+            ->rawColumns(['pricing_source'])
+            ->make(true);
+    }
+
+    public function salesStats(Service $service, Request $request)
+    {
+        [$fromDate, $toDate] = $this->resolveBookingDateRange($request);
+
+        $base = Booking::query()
+            ->where('service_id', $service->id)
+            ->where('status', 'completed')
+            ->where('service_pricing_source', '!=', 'package')
+            ->whereBetween('booking_date', [$fromDate->toDateString(), $toDate->toDateString()]);
+
+        return response()->json([
+            'total_count' => (int) $base->count(),
+            'total_sales' => round((float) $base->sum('service_final_price_snapshot'), 2),
+        ]);
+    }
+
+    private function resolveBookingDateRange(Request $request): array
+    {
+        $from = $request->query('from');
+        $to = $request->query('to');
+
+        $fromDate = now()->startOfMonth()->startOfDay();
+        $toDate = now()->endOfMonth()->endOfDay();
+
+        if ($from) {
+            try {
+                $fromDate = Carbon::createFromFormat('Y-m-d', $from)->startOfDay();
+            } catch (\Throwable $e) {
+            }
+        }
+        if ($to) {
+            try {
+                $toDate = Carbon::createFromFormat('Y-m-d', $to)->endOfDay();
+            } catch (\Throwable $e) {
+            }
+        }
+
+        return [$fromDate, $toDate, $fromDate->toDateString(), $toDate->toDateString()];
     }
 
     public function destroy(Request $request, Service $service)

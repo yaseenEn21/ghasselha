@@ -48,6 +48,18 @@
                         </a>
                     @endcan
 
+                    @can('products.view')
+                        <a class="menu-link" href="{{ route('dashboard.products.index') }}">
+                            <span class="menu-icon">
+                                <i class="ki-duotone ki-profile-user fs-2">
+                                    <span class="path1"></span><span class="path2"></span>
+                                    <span class="path3"></span><span class="path4"></span>
+                                </i>
+                            </span>
+                            <span class="menu-title">{{ t(key: 'products.title') }}</span>
+                        </a>
+                    @endcan
+
                     @can('packages.view')
                         <a class="menu-link" href="{{ route('dashboard.packages.index') }}">
                             <span class="menu-icon">
@@ -81,6 +93,30 @@
                                 </i>
                             </span>
                             <span class="menu-title">{{ t(key: 'employees.title') }}</span>
+                        </a>
+                    @endcan
+
+                    @can('points.view')
+                        <a class="menu-link" href="{{ route('dashboard.points.index') }}">
+                            <span class="menu-icon">
+                                <i class="ki-duotone ki-profile-user fs-2">
+                                    <span class="path1"></span><span class="path2"></span>
+                                    <span class="path3"></span><span class="path4"></span>
+                                </i>
+                            </span>
+                            <span class="menu-title">{{ t(key: 'points.title') }}</span>
+                        </a>
+                    @endcan
+
+                    @can('wallets.view')
+                        <a class="menu-link" href="{{ route('dashboard.wallets.index') }}">
+                            <span class="menu-icon">
+                                <i class="ki-duotone ki-profile-user fs-2">
+                                    <span class="path1"></span><span class="path2"></span>
+                                    <span class="path3"></span><span class="path4"></span>
+                                </i>
+                            </span>
+                            <span class="menu-title">{{ t(key: 'wallets.title') }}</span>
                         </a>
                     @endcan
                     

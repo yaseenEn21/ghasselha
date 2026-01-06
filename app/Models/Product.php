@@ -13,11 +13,16 @@ class Product extends Model implements HasMedia
 
     protected $fillable = [
         'product_category_id',
-        'name','description',
-        'price','discounted_price',
-        'is_active','sort_order',
+        'name',
+        'description',
+        'cost',
+        'price',
+        'discounted_price',
+        'is_active',
+        'sort_order',
         'max_qty_per_booking',
-        'created_by','updated_by',
+        'created_by',
+        'updated_by',
     ];
 
     protected $casts = [
@@ -40,6 +45,41 @@ class Product extends Model implements HasMedia
         $p = (float) $this->price;
         $d = $this->discounted_price !== null ? (float) $this->discounted_price : null;
         return $d ?? $p;
+    }
+
+    public function bookingLines()
+    {
+        return $this->hasMany(BookingProduct::class, 'product_id');
+    }
+
+    public function getLocalizedName(): string
+    {
+        $locale = app()->getLocale();
+        $arr = $this->name ?? [];
+        return $arr[$locale] ?? (reset($arr) ?: '');
+    }
+
+    public function getLocalizedDescription(): string
+    {
+        $locale = app()->getLocale();
+        $arr = $this->description ?? [];
+        return $arr[$locale] ?? (reset($arr) ?: '');
+    }
+
+    public function getImageUrlForLocale(?string $locale = null): ?string
+    {
+        $locale = $locale ?: app()->getLocale();
+        $collection = $locale === 'ar' ? 'image_ar' : 'image_en';
+
+        $url = $this->getFirstMediaUrl($collection);
+        if ($url)
+            return $url;
+
+        // fallback: لو ما في صورة للغة، جرّب الثانية
+        $fallback = $collection === 'image_ar' ? 'image_en' : 'image_ar';
+        $url2 = $this->getFirstMediaUrl($fallback);
+
+        return $url2 ?: null;
     }
 }
 

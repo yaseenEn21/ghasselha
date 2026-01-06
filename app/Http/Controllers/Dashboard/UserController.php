@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Dashboard;
 
 use App\Http\Controllers\Controller;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Yajra\DataTables\DataTables;
 use App\Repositories\Contracts\UserRepositoryInterface;
@@ -17,12 +18,12 @@ class UserController extends Controller
     public function __construct(UserRepositoryInterface $userRepo)
     {
 
-         // 🔐 Permissions middleware
+        // 🔐 Permissions middleware
         $this->middleware('can:users.view')->only(['index', 'show']);
         $this->middleware('can:users.create')->only(['create', 'store']);
         $this->middleware('can:users.edit')->only(['edit', 'update']);
         $this->middleware('can:users.delete')->only(['destroy']);
-        
+
         $this->userRepo = $userRepo;
 
         $this->title = t("users.list");
@@ -34,6 +35,41 @@ class UserController extends Controller
             "page_title" => $this->page_title,
         ]);
 
+    }
+
+    public function select2(Request $request, $userType = 'customer')
+    {
+        $q = trim((string)$request->get('q', ''));
+        $page = max(1, (int)$request->get('page', 1));
+        $perPage = max(1, min(50, (int)$request->get('per_page', 10)));
+        $skip = ($page - 1) * $perPage;
+
+        $query = User::query()->where('user_type', $userType)->select(['id', 'name', 'mobile']);
+
+        if ($q !== '') {
+            $query->where(function ($w) use ($q) {
+                $w->where('name', 'like', "%{$q}%")
+                  ->orWhere('mobile', 'like', "%{$q}%");
+            });
+        }
+
+        $total = (clone $query)->count();
+
+        $users = $query
+            ->orderByDesc('id')
+            ->skip($skip)
+            ->take($perPage)
+            ->get();
+
+        $results = $users->map(function ($u) {
+            $text = trim(($u->mobile ? $u->mobile . ' - ' : '') . ($u->name ?? ''));
+            return ['id' => $u->id, 'text' => $text ?: ('#' . $u->id)];
+        })->values();
+
+        return response()->json([
+            'results' => $results,
+            'more' => ($skip + $perPage) < $total,
+        ]);
     }
 
     public function index(DataTables $datatable, Request $request)
@@ -48,8 +84,8 @@ class UserController extends Controller
                 $query->where('name', 'like', "%{$search}%");
             }
 
-            $currentUserId = auth()->id(); 
-            
+            $currentUserId = auth()->id();
+
             return $datatable->eloquent($query)
                 ->addColumn('creator_name', fn($row) => $row->createdBy?->name ?? '—')
                 ->addColumn('is_active_badge', function ($row) {
