@@ -12,6 +12,8 @@ use App\Http\Controllers\Dashboard\PointController;
 use App\Http\Controllers\Dashboard\WalletController;
 use App\Http\Controllers\Dashboard\PromotionController;
 use App\Http\Controllers\Dashboard\PromotionCouponController;
+use App\Http\Controllers\Dashboard\InvoiceController;
+use App\Http\Controllers\Dashboard\PaymentController;
 use App\Http\Controllers\ProfileController;
 
 Route::get('/', function () {
@@ -108,6 +110,12 @@ Route::middleware(['auth'])->group(function () {
 
         Route::get('promotions/{promotion}/coupons/{coupon}/redemptions/datatable', [PromotionCouponController::class, 'redemptionsDatatable'])
             ->name('promotions.coupons.redemptions.datatable');
+
+        Route::get('invoices/datatable', [InvoiceController::class, 'datatable'])->name('invoices.datatable');
+        Route::resource('invoices', InvoiceController::class)->only(['index', 'show']);
+
+        Route::get('payments/datatable', [PaymentController::class, 'datatable'])->name('payments.datatable');
+        Route::resource('payments', PaymentController::class)->only(['index', 'show']);
 
     });
 

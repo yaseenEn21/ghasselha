@@ -11,5 +11,7 @@ return [
   'wallets'   => ['create', 'edit', 'delete', 'view'],
   'promotions'   => ['create', 'edit', 'delete', 'view'],
   'promotion_coupons'   => ['create', 'edit', 'delete', 'view'],
+  'invoices'   => ['view'],
+  'payments'   => ['view'],
   'bikers'   => ['create', 'edit', 'delete', 'view'],
 ];

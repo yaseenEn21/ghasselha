@@ -131,6 +131,30 @@
                             <span class="menu-title">{{ t(key: 'promotions.title') }}</span>
                         </a>
                     @endcan
+
+                    @can('invoices.view')
+                        <a class="menu-link" href="{{ route('dashboard.invoices.index') }}">
+                            <span class="menu-icon">
+                                <i class="ki-duotone ki-profile-user fs-2">
+                                    <span class="path1"></span><span class="path2"></span>
+                                    <span class="path3"></span><span class="path4"></span>
+                                </i>
+                            </span>
+                            <span class="menu-title">{{ t(key: 'invoices.title') }}</span>
+                        </a>
+                    @endcan
+
+                    @can('payments.view')
+                        <a class="menu-link" href="{{ route('dashboard.payments.index') }}">
+                            <span class="menu-icon">
+                                <i class="ki-duotone ki-profile-user fs-2">
+                                    <span class="path1"></span><span class="path2"></span>
+                                    <span class="path3"></span><span class="path4"></span>
+                                </i>
+                            </span>
+                            <span class="menu-title">{{ t(key: 'payments.title') }}</span>
+                        </a>
+                    @endcan
                     
                     @can('roles.view')
                         <a class="menu-link" href="{{ route('dashboard.roles.index') }}">
