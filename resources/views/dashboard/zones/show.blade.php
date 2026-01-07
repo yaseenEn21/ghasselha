@@ -17,10 +17,6 @@
 @section('content')
 
 @section('top-btns')
-    <a href="{{ route('dashboard.zones.index') }}" class="btn btn-light">
-        {{ __('zones.back_to_list') }}
-    </a>
-
     @can('zones.edit')
         <a href="{{ route('dashboard.zones.edit', $zone->id) }}" class="btn btn-primary">
             {{ __('zones.edit_zone') }}
