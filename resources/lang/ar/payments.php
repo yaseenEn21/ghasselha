@@ -48,7 +48,7 @@ return [
         'payable' => 'الغرض/المرجع',
         'method' => 'طريقة الدفع',
         'status' => 'الحالة',
-        'gateway' => 'Gateway',
+        'gateway' => 'البوابة',
         'amount' => 'المبلغ',
         'currency' => 'العملة',
         'paid_at' => 'تاريخ الدفع',

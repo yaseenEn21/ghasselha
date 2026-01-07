@@ -14,6 +14,8 @@ use App\Http\Controllers\Dashboard\PromotionController;
 use App\Http\Controllers\Dashboard\PromotionCouponController;
 use App\Http\Controllers\Dashboard\InvoiceController;
 use App\Http\Controllers\Dashboard\PaymentController;
+use App\Http\Controllers\Dashboard\CustomerGroupController;
+use App\Http\Controllers\Dashboard\ZoneController;
 use App\Http\Controllers\ProfileController;
 
 Route::get('/', function () {
@@ -116,6 +118,20 @@ Route::middleware(['auth'])->group(function () {
 
         Route::get('payments/datatable', [PaymentController::class, 'datatable'])->name('payments.datatable');
         Route::resource('payments', PaymentController::class)->only(['index', 'show']);
+
+        Route::get('customer-groups/datatable', [CustomerGroupController::class, 'datatable'])
+            ->name('customer-groups.datatable');
+
+        Route::resource('customer-groups', CustomerGroupController::class)
+            ->parameters(['customer-groups' => 'customer_group'])
+            ->names('customer-groups')
+            ->except(['show']);
+
+        Route::get('zones/datatable', [ZoneController::class, 'datatable'])->name('zones.datatable');
+
+        Route::resource('zones', ZoneController::class)
+            ->names('zones')
+            ->except(['show']);
 
     });
 

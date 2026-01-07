@@ -10,7 +10,7 @@
     <div class="card-body">
 
         <div class="row g-4 mb-6">
-            <div class="col-md-4">
+            <div class="col-md-3">
                 <input type="text" id="search_custom" class="form-control"
                        placeholder="{{ __('invoices.filters.search_placeholder') }}">
             </div>
@@ -25,36 +25,18 @@
                 </select>
             </div>
 
-            <div class="col-md-2">
-                <select id="type" class="form-select">
-                    <option value="">{{ __('invoices.filters.type_placeholder') }}</option>
-                    <option value="invoice">{{ __('invoices.type.invoice') }}</option>
-                    <option value="adjustment">{{ __('invoices.type.adjustment') }}</option>
-                    <option value="credit_note">{{ __('invoices.type.credit_note') }}</option>
-                </select>
-            </div>
-
-            <div class="col-md-2">
-                <select id="locked" class="form-select">
-                    <option value="">{{ __('invoices.filters.locked_placeholder') }}</option>
-                    <option value="yes">{{ __('invoices.filters.locked_yes') }}</option>
-                    <option value="no">{{ __('invoices.filters.locked_no') }}</option>
-                </select>
-            </div>
-
-            <div class="col-md-1">
+            <div class="col-md-3">
                 <input type="date" id="from" class="form-control" title="{{ __('invoices.filters.from') }}">
             </div>
-            <div class="col-md-1">
+            <div class="col-md-3">
                 <input type="date" id="to" class="form-control" title="{{ __('invoices.filters.to') }}">
             </div>
 
-            <div class="col-md-12 d-flex justify-content-end">
+            <div class="col-md-1">
                 <button type="button" id="reset_filters" class="btn btn-light">
                     <i class="ki-duotone ki-arrows-circle fs-2">
                         <span class="path1"></span><span class="path2"></span>
                     </i>
-                    {{ __('invoices.filters.reset') }}
                 </button>
             </div>
         </div>
@@ -67,12 +49,12 @@
                     <th>{{ __('invoices.fields.number') }}</th>
                     <th>{{ __('invoices.fields.user') }}</th>
                     <th>{{ __('invoices.fields.invoiceable') }}</th>
-                    <th>{{ __('invoices.fields.type') }}</th>
+                    {{-- <th>{{ __('invoices.fields.type') }}</th> --}}
                     <th>{{ __('invoices.fields.status') }}</th>
-                    <th>{{ __('invoices.fields.locked') }}</th>
+                    {{-- <th>{{ __('invoices.fields.locked') }}</th> --}}
                     <th>{{ __('invoices.fields.subtotal') }}</th>
                     <th>{{ __('invoices.fields.discount') }}</th>
-                    <th>{{ __('invoices.fields.tax') }}</th>
+                    {{-- <th>{{ __('invoices.fields.tax') }}</th> --}}
                     <th>{{ __('invoices.fields.total') }}</th>
                     <th>{{ __('invoices.fields.issued_at') }}</th>
                     <th>{{ __('invoices.fields.paid_at') }}</th>
@@ -109,12 +91,12 @@
             {data: 'number', name: 'number'},
             {data: 'user_label', name: 'user_id', orderable:false, searchable:false},
             {data: 'invoiceable_label', name: 'invoiceable_id', orderable:false, searchable:false},
-            {data: 'type_badge', name: 'type', orderable:false, searchable:false},
+            // {data: 'type_badge', name: 'type', orderable:false, searchable:false},
             {data: 'status_badge', name: 'status', orderable:false, searchable:false},
-            {data: 'locked_badge', name: 'is_locked', orderable:false, searchable:false},
+            // {data: 'locked_badge', name: 'is_locked', orderable:false, searchable:false},
             {data: 'subtotal', name: 'subtotal', searchable:false},
             {data: 'discount', name: 'discount', searchable:false},
-            {data: 'tax', name: 'tax', searchable:false},
+            // {data: 'tax', name: 'tax', searchable:false},
             {data: 'total', name: 'total', searchable:false},
             {data: 'issued_at_label', name: 'issued_at', orderable:false, searchable:false},
             {data: 'paid_at_label', name: 'paid_at', orderable:false, searchable:false},

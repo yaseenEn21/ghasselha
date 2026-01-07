@@ -14,6 +14,8 @@ class InvoiceController extends Controller
 
     public function __construct()
     {
+        app()->setLocale('en');
+
         $this->middleware('can:invoices.view')->only(['index', 'show', 'datatable']);
 
         $this->title = t('invoices.list');
@@ -41,11 +43,11 @@ class InvoiceController extends Controller
         if ($search = trim((string) $request->get('search_custom'))) {
             $query->where(function ($q) use ($search) {
                 $q->where('number', 'like', "%{$search}%")
-                  ->orWhere('id', $search);
+                    ->orWhere('id', $search);
             })->orWhereHas('user', function ($uq) use ($search) {
                 $uq->where('name', 'like', "%{$search}%")
-                   ->orWhere('email', 'like', "%{$search}%")
-                   ->orWhere('mobile', 'like', "%{$search}%"); // عدّل لو اسم العمود مختلف
+                    ->orWhere('email', 'like', "%{$search}%")
+                    ->orWhere('mobile', 'like', "%{$search}%"); // عدّل لو اسم العمود مختلف
             });
         }
 
@@ -70,8 +72,10 @@ class InvoiceController extends Controller
         }
 
         if ($locked = $request->get('locked')) {
-            if ($locked === 'yes') $query->where('is_locked', true);
-            if ($locked === 'no')  $query->where('is_locked', false);
+            if ($locked === 'yes')
+                $query->where('is_locked', true);
+            if ($locked === 'no')
+                $query->where('is_locked', false);
         }
 
         return $datatable->eloquent($query)
@@ -100,19 +104,22 @@ class InvoiceController extends Controller
                 return '<span class="badge badge-light-' . $cls . '">' . e(__('invoices.status.' . $row->status)) . '</span>';
             })
             ->addColumn('locked_badge', function (Invoice $row) {
-                if (!$row->is_locked) return '—';
+                if (!$row->is_locked)
+                    return '—';
                 return '<span class="badge badge-light-dark">' . e(__('invoices.locked')) . '</span>';
             })
-            ->editColumn('subtotal', fn (Invoice $row) => number_format((float)$row->subtotal, 2))
-            ->editColumn('discount', fn (Invoice $row) => number_format((float)$row->discount, 2))
-            ->editColumn('tax', fn (Invoice $row) => number_format((float)$row->tax, 2))
-            ->editColumn('total', fn (Invoice $row) => number_format((float)$row->total, 2))
-            ->addColumn('issued_at_label', fn (Invoice $row) => $row->issued_at ? $row->issued_at->format('Y-m-d H:i') : '—')
-            ->addColumn('paid_at_label', fn (Invoice $row) => $row->paid_at ? $row->paid_at->format('Y-m-d H:i') : '—')
+            ->editColumn('subtotal', fn(Invoice $row) => number_format((float) $row->subtotal, 2))
+            ->editColumn('discount', fn(Invoice $row) => number_format((float) $row->discount, 2))
+            ->editColumn('tax', fn(Invoice $row) => number_format((float) $row->tax, 2))
+            ->editColumn('total', fn(Invoice $row) => number_format((float) $row->total, 2))
+            ->addColumn('issued_at_label', fn(Invoice $row) => $row->issued_at ? $row->issued_at->format('Y-m-d H:i') : '—')
+            ->addColumn('paid_at_label', fn(Invoice $row) => $row->paid_at ? $row->paid_at->format('Y-m-d H:i') : '—')
             ->addColumn('invoiceable_label', function (Invoice $row) {
-                if (!$row->invoiceable_type || !$row->invoiceable_id) return '—';
                 $short = class_basename($row->invoiceable_type);
-                return e($short . ' #' . (int)$row->invoiceable_id);
+                $data = invoiceable_label($short, (int) $row->invoiceable_id, $row->invoiceable);
+                if (!$data)
+                    return '—';
+                return $data['label'];
             })
             ->addColumn('actions', function (Invoice $row) {
                 return view('dashboard.invoices._actions', ['invoice' => $row])->render();
@@ -131,16 +138,22 @@ class InvoiceController extends Controller
             'page_title' => $this->page_title,
         ]);
 
+        $short = class_basename($invoice->invoiceable_type);
+        $data = invoiceable_label($short, (int) $invoice->invoiceable_id, $invoice->invoiceable);
+        $invoiceableLabels = $data['label'] ?? '—';
+        $invoiceableRoute = $data['route'] ?? null;
+
+
         $invoice->loadMissing([
             'user',
             'items',
             'items.itemable',
             'parent',
             'children',
-            'payments', // لو موجودة عندك
-            'invoiceable',
+            'payments',
+            'invoiceable'
         ]);
 
-        return view('dashboard.invoices.show', compact('invoice'));
+        return view('dashboard.invoices.show', compact('invoice', 'invoiceableLabels'));
     }
 }

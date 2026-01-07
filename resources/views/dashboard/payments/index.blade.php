@@ -6,7 +6,7 @@
     <div class="card-body">
 
         <div class="row g-4 mb-6">
-            <div class="col-md-4">
+            <div class="col-md-3">
                 <input type="text" id="search_custom" class="form-control"
                        placeholder="{{ __('payments.filters.search_placeholder') }}">
             </div>
@@ -36,34 +36,17 @@
             </div>
 
             <div class="col-md-2">
-                <select id="has_invoice" class="form-select">
-                    <option value="">{{ __('payments.filters.has_invoice_placeholder') }}</option>
-                    <option value="yes">{{ __('payments.filters.has_invoice_yes') }}</option>
-                    <option value="no">{{ __('payments.filters.has_invoice_no') }}</option>
-                </select>
-            </div>
-
-            <div class="col-md-2">
-                <input type="text" id="gateway" class="form-control" placeholder="{{ __('payments.filters.gateway_placeholder') }}">
-            </div>
-
-            <div class="col-md-2">
-                <input type="text" id="payable_type" class="form-control" placeholder="{{ __('payments.filters.payable_type_placeholder') }}">
-            </div>
-
-            <div class="col-md-1">
                 <input type="date" id="from" class="form-control" title="{{ __('payments.filters.from') }}">
             </div>
-            <div class="col-md-1">
+            <div class="col-md-2">
                 <input type="date" id="to" class="form-control" title="{{ __('payments.filters.to') }}">
             </div>
 
-            <div class="col-md-12 d-flex justify-content-end">
+            <div class="col-md-1">
                 <button type="button" id="reset_filters" class="btn btn-light">
                     <i class="ki-duotone ki-arrows-circle fs-2">
                         <span class="path1"></span><span class="path2"></span>
                     </i>
-                    {{ __('payments.filters.reset') }}
                 </button>
             </div>
         </div>
@@ -74,7 +57,7 @@
                 <tr class="text-start text-muted fw-bold fs-7 text-uppercase gs-0">
                     <th>#</th>
                     <th>{{ __('payments.fields.user') }}</th>
-                    <th>{{ __('payments.fields.invoice') }}</th>
+                    {{-- <th>{{ __('payments.fields.invoice') }}</th> --}}
                     <th>{{ __('payments.fields.payable') }}</th>
                     <th>{{ __('payments.fields.method') }}</th>
                     <th>{{ __('payments.fields.status') }}</th>
@@ -115,7 +98,7 @@
         columns: [
             {data: 'id', name: 'id'},
             {data: 'user_label', name: 'user_id', orderable:false, searchable:false},
-            {data: 'invoice_label', name: 'invoice_id', orderable:false, searchable:false},
+            // {data: 'invoice_label', name: 'invoice_id', orderable:false, searchable:false},
             {data: 'payable_label', name: 'payable_id', orderable:false, searchable:false},
             {data: 'method_badge', name: 'method', orderable:false, searchable:false},
             {data: 'status_badge', name: 'status', orderable:false, searchable:false},

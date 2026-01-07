@@ -156,6 +156,28 @@
                         </a>
                     @endcan
                     
+                    @can('customer_groups.view')
+                        <a class="menu-link" href="{{ route('dashboard.customer-groups.index') }}">
+                            <span class="menu-icon">
+                                <i class="ki-duotone ki-shield-tick fs-2">
+                                    <span class="path1"></span><span class="path2"></span>
+                                </i>
+                            </span>
+                            <span class="menu-title">{{ t(key: 'customer_groups.title') }}</span>
+                        </a>
+                    @endcan
+
+                    @can('zones.view')
+                        <a class="menu-link" href="{{ route('dashboard.zones.index') }}">
+                            <span class="menu-icon">
+                                <i class="ki-duotone ki-shield-tick fs-2">
+                                    <span class="path1"></span><span class="path2"></span>
+                                </i>
+                            </span>
+                            <span class="menu-title">{{ t(key: 'zones.title') }}</span>
+                        </a>
+                    @endcan
+
                     @can('roles.view')
                         <a class="menu-link" href="{{ route('dashboard.roles.index') }}">
                             <span class="menu-icon">

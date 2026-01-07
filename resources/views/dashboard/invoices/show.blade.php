@@ -2,21 +2,7 @@
 
 @section('content')
 
-@section('top-btns')
-    <a href="{{ route('dashboard.invoices.index') }}" class="btn btn-light">
-        {{ __('invoices.back_to_list') }}
-    </a>
-
-    <button type="button" class="btn btn-light-primary" onclick="window.print()">
-        <i class="ki-duotone ki-printer fs-2 me-1">
-            <span class="path1"></span><span class="path2"></span>
-        </i>
-        {{ __('invoices.print') }}
-    </button>
-@endsection
-
 @php
-    /** @var \App\Models\Invoice $invoice */
     $locale = app()->getLocale();
 
     $statusMap = [
@@ -77,7 +63,6 @@
                             <div class="d-flex align-items-center gap-2 flex-wrap">
                                 <div class="fw-bold fs-2">{{ __('invoices.invoice') }}</div>
                                 <span class="badge badge-light-{{ $statusCls }}">{{ __('invoices.status.' . $invoice->status) }}</span>
-                                <span class="badge badge-light-{{ $typeCls }}">{{ __('invoices.type.' . $invoice->type) }}</span>
                                 @if($invoice->is_locked)
                                     <span class="badge badge-light-dark">{{ __('invoices.locked') }}</span>
                                 @endif
@@ -153,10 +138,7 @@
                             </div>
                             <div class="flex-grow-1">
                                 <div class="text-muted">{{ __('invoices.fields.invoiceable') }}</div>
-                                <div class="fw-bold">{{ $invoiceableLabel }}</div>
-                                <div class="text-muted">
-                                    {{ __('invoices.fields.type') }}: {{ __('invoices.type.' . $invoice->type) }}
-                                </div>
+                                <div class="fw-bold">{{ $invoiceableLabels }}</div>
                             </div>
                         </div>
                     </div>
@@ -228,12 +210,6 @@
                                     @if($desc)
                                         <div class="text-muted fw-semibold">{{ $desc }}</div>
                                     @endif
-
-                                    @if($item->itemable_type && $item->itemable_id)
-                                        <div class="text-muted fs-8 mt-1">
-                                            {{ class_basename($item->itemable_type) }} #{{ (int)$item->itemable_id }}
-                                        </div>
-                                    @endif
                                 </td>
                                 <td>{{ number_format((float)$item->qty, 2) }}</td>
                                 <td>{{ number_format((float)$item->unit_price, 2) }} {{ $currency }}</td>
@@ -275,8 +251,8 @@
                                 <tr>
                                     <td>{{ $p->id }}</td>
                                     <td class="fw-bold">{{ number_format((float)$p->amount, 2) }} {{ $currency }}</td>
-                                    <td>{{ $p->method ?? '—' }}</td>
-                                    <td>{{ $p->status ?? '—' }}</td>
+                                    <td>{{ __('payment_methods.' . $p->method ?? '-') }}</td>
+                                    <td>{{ __('payments.status.' . $p->status ?? '-') }}</td>
                                     <td>{{ $p->paid_at?->format('Y-m-d H:i') ?? ($p->created_at?->format('Y-m-d H:i') ?? '—') }}</td>
                                 </tr>
                             @endforeach
@@ -415,7 +391,7 @@
         </div>
 
         {{-- RAW META --}}
-        <div class="card card-flush">
+        <div class="card card-flush d-none">
             <div class="card-header pt-5">
                 <h3 class="card-title fw-bold">{{ __('invoices.meta_title') }}</h3>
             </div>

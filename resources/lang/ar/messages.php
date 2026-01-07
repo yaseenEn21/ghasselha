@@ -17,6 +17,7 @@ return [
     'created_at' => 'تاريخ الإنشاء',
     'Name' => 'الإسم',
     'paid' => 'مدفوع',
+    'unpaid' => 'مدفوع',
     'present' => 'حضور',
     'absent' => 'غياب',
 

@@ -104,4 +104,5 @@ return [
 
     'relations_title' => 'العلاقات',
     'meta_title' => 'بيانات إضافية (Meta)',
+    'Package'          => 'باقة',
 ];

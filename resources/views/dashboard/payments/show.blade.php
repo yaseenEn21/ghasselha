@@ -3,16 +3,7 @@
 @section('content')
 
 @section('top-btns')
-    <a href="{{ route('dashboard.payments.index') }}" class="btn btn-light">
-        {{ __('payments.back_to_list') }}
-    </a>
-
-    <button type="button" class="btn btn-light-primary" onclick="window.print()">
-        <i class="ki-duotone ki-printer fs-2 me-1">
-            <span class="path1"></span><span class="path2"></span>
-        </i>
-        {{ __('payments.print') }}
-    </button>
+   {{-- print --}}
 @endsection
 
 @php
@@ -50,8 +41,12 @@
     }
 
     $payableLabel = '—';
+    $payableId = null;
+    $payableLocal = null;
     if ($payment->payable_type && $payment->payable_id) {
         $payableLabel = $payment->payable_type . ' #' . (int)$payment->payable_id;
+        $payableLocal = $payment->payable_type;
+        $payableId = $payment->payable_id;
     } elseif ($payment->payable_type) {
         $payableLabel = $payment->payable_type;
     }
@@ -154,9 +149,9 @@
                                     <div class="text-muted">—</div>
                                 @endif
 
-                                <div class="text-muted mt-1">
+                                {{-- <div class="text-muted mt-1">
                                     {{ __('payments.fields.payable') }}: <span class="fw-semibold">{{ $payableLabel }}</span>
-                                </div>
+                                </div> --}}
                             </div>
                         </div>
                     </div>
@@ -330,7 +325,7 @@
             <div class="card-body pt-0">
                 <div class="mb-4">
                     <div class="text-muted fs-8">{{ __('payments.fields.payable') }}</div>
-                    <div class="fw-bold">{{ $payableLabel }}</div>
+                    <div class="fw-bold">{{ __('payment_purposes.' . $payment->payable_type) }}</div>
                 </div>
 
                 <div class="mb-2">

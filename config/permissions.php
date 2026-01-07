@@ -13,5 +13,7 @@ return [
   'promotion_coupons'   => ['create', 'edit', 'delete', 'view'],
   'invoices'   => ['view'],
   'payments'   => ['view'],
+  'customer_groups'   => ['create', 'edit', 'delete', 'view'],
+  'zones'   => ['create', 'edit', 'delete', 'view'],
   'bikers'   => ['create', 'edit', 'delete', 'view'],
 ];

@@ -6,4 +6,5 @@ return [
     'booking_payment'  => 'سداد حجز',
     'package_purchase' => 'شراء باقة',
     'refund'           => 'استرجاع',
+    'other'            => 'اخرى',
 ];

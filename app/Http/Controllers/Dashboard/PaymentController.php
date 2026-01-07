@@ -14,6 +14,7 @@ class PaymentController extends Controller
 
     public function __construct()
     {
+
         $this->middleware('can:payments.view')->only(['index', 'show', 'datatable']);
 
         $this->title = t('payments.list');
@@ -63,18 +64,20 @@ class PaymentController extends Controller
         }
 
         if ($method = $request->get('method')) {
-            if (in_array($method, ['wallet','credit_card','apple_pay','google_pay','cash','visa','stc'], true)) {
+            if (in_array($method, ['wallet', 'credit_card', 'apple_pay', 'google_pay', 'cash', 'visa', 'stc'], true)) {
                 $query->where('method', $method);
             }
         }
 
-        if ($gateway = trim((string)$request->get('gateway'))) {
+        if ($gateway = trim((string) $request->get('gateway'))) {
             $query->where('gateway', 'like', "%{$gateway}%");
         }
 
         if ($invoiceLink = $request->get('has_invoice')) {
-            if ($invoiceLink === 'yes') $query->whereNotNull('invoice_id');
-            if ($invoiceLink === 'no')  $query->whereNull('invoice_id');
+            if ($invoiceLink === 'yes')
+                $query->whereNotNull('invoice_id');
+            if ($invoiceLink === 'no')
+                $query->whereNull('invoice_id');
         }
 
         if ($payableType = $request->get('payable_type')) {
@@ -97,16 +100,16 @@ class PaymentController extends Controller
                 $mobile = $row->user?->mobile ?? null;
                 return e($mobile ? ($name . ' - ' . $mobile) : $name);
             })
-            ->addColumn('invoice_label', function (Payment $row) {
-                if (!$row->invoice_id) return '—';
-                $num = $row->invoice?->number;
-                return e($num ? ($num . ' (#' . (int)$row->invoice_id . ')') : ('#' . (int)$row->invoice_id));
-            })
+            // ->addColumn('invoice_label', function (Payment $row) {
+            //     if (!$row->invoice_id) return '—';
+            //     $num = $row->invoice?->number;
+            //     return e($num ? ($num . ' (#' . (int)$row->invoice_id . ')') : ('#' . (int)$row->invoice_id));
+            // })
             ->addColumn('payable_label', function (Payment $row) {
-                if (!$row->payable_type || !$row->payable_id) {
-                    return e($row->payable_type ?: '—');
+                if ($row->payable_type) {
+                    return t('payment_purposes.' . $row->payable_type ?: '—');
                 }
-                return e($row->payable_type . ' #' . (int)$row->payable_id);
+                return '—';
             })
             ->addColumn('method_badge', function (Payment $row) {
                 $map = [
@@ -133,13 +136,11 @@ class PaymentController extends Controller
                 return '<span class="badge badge-light-' . $cls . '">' . e(__('payments.status.' . $row->status)) . '</span>';
             })
             ->addColumn('gateway_label', function (Payment $row) {
-                $g = $row->gateway ?: '—';
-                $s = $row->gateway_status ?: null;
-                return e($s ? ($g . ' • ' . $s) : $g);
+                return $row->gateway ? e($row->gateway) : '—';
             })
-            ->editColumn('amount', fn (Payment $row) => number_format((float)$row->amount, 2))
-            ->addColumn('paid_at_label', fn (Payment $row) => $row->paid_at ? $row->paid_at->format('Y-m-d H:i') : '—')
-            ->addColumn('created_at_label', fn (Payment $row) => $row->created_at ? $row->created_at->format('Y-m-d H:i') : '—')
+            ->editColumn('amount', fn(Payment $row) => number_format((float) $row->amount, 2))
+            ->addColumn('paid_at_label', fn(Payment $row) => $row->paid_at ? $row->paid_at->format('Y-m-d H:i') : '—')
+            ->addColumn('created_at_label', fn(Payment $row) => $row->created_at ? $row->created_at->format('Y-m-d H:i') : '—')
             ->addColumn('actions', function (Payment $row) {
                 return view('dashboard.payments._actions', ['payment' => $row])->render();
             })
@@ -161,6 +162,7 @@ class PaymentController extends Controller
             'user',
             'invoice',
             // 'payable',
+            'invoice.invoiceable',
         ]);
 
         return view('dashboard.payments.show', compact('payment'));

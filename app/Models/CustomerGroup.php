@@ -26,6 +26,11 @@ class CustomerGroup extends Model
         return $this->hasMany(User::class, 'customer_group_id');
     }
 
+    public function serviceGroupPrices()
+    {
+        return $this->hasMany(ServiceGroupPrice::class, 'customer_group_id');
+    }
+    
     public function createdBy()
     {
         return $this->belongsTo(User::class, 'created_by');
