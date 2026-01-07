@@ -51,10 +51,10 @@
                 <tr class="text-start text-muted fw-bold fs-7 text-uppercase gs-0">
                     <th>#</th>
                     <th>{{ __('zones.fields.name') }}</th>
-                    <th>{{ __('zones.fields.polygon') }}</th>
-                    <th>{{ __('zones.fields.bbox') }}</th>
-                    <th>{{ __('zones.fields.center') }}</th>
-                    <th>{{ __('zones.fields.sort_order') }}</th>
+                    {{-- <th>{{ __('zones.fields.polygon') }}</th> --}}
+                    {{-- <th>{{ __('zones.fields.bbox') }}</th> --}}
+                    {{-- <th>{{ __('zones.fields.center') }}</th> --}}
+                    {{-- <th>{{ __('zones.fields.sort_order') }}</th> --}}
                     <th>{{ __('zones.fields.prices_count') }}</th>
                     <th>{{ __('zones.fields.status') }}</th>
                     <th>{{ __('zones.fields.created_at') }}</th>
@@ -87,10 +87,10 @@
         columns: [
             {data: 'id', name: 'id'},
             {data: 'name', name: 'name'},
-            {data: 'polygon_badge', name: 'polygon', orderable:false, searchable:false},
-            {data: 'bbox_label', name: 'min_lat', orderable:false, searchable:false},
-            {data: 'center_label', name: 'center_lat', orderable:false, searchable:false},
-            {data: 'sort_order', name: 'sort_order', searchable:false},
+            // {data: 'polygon_badge', name: 'polygon', orderable:false, searchable:false},
+            // {data: 'bbox_label', name: 'min_lat', orderable:false, searchable:false},
+            // {data: 'center_label', name: 'center_lat', orderable:false, searchable:false},
+            // {data: 'sort_order', name: 'sort_order', searchable:false},
             {data: 'prices_count', name: 'service_zone_prices_count', searchable:false},
             {data: 'is_active_badge', name: 'is_active', orderable:false, searchable:false},
             {data: 'created_at_label', name: 'created_at', orderable:false, searchable:false},

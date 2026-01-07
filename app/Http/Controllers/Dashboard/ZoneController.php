@@ -47,8 +47,10 @@ class ZoneController extends Controller
         }
 
         if ($status = $request->get('status')) {
-            if ($status === 'active') $query->where('is_active', true);
-            if ($status === 'inactive') $query->where('is_active', false);
+            if ($status === 'active')
+                $query->where('is_active', true);
+            if ($status === 'inactive')
+                $query->where('is_active', false);
         }
 
         if ($request->filled('from')) {
@@ -62,29 +64,48 @@ class ZoneController extends Controller
             ->addColumn('polygon_badge', function (Zone $row) {
                 $has = is_array($row->polygon) && !empty($row->polygon);
                 return $has
-                    ? '<span class="badge badge-light-success">'.e(__('zones.has_polygon')).'</span>'
-                    : '<span class="badge badge-light-warning">'.e(__('zones.no_polygon')).'</span>';
+                    ? '<span class="badge badge-light-success">' . e(__('zones.has_polygon')) . '</span>'
+                    : '<span class="badge badge-light-warning">' . e(__('zones.no_polygon')) . '</span>';
             })
             ->addColumn('bbox_label', function (Zone $row) {
                 if ($row->min_lat === null || $row->min_lng === null || $row->max_lat === null || $row->max_lng === null) {
                     return '—';
                 }
-                return e($row->min_lat.', '.$row->min_lng.' → '.$row->max_lat.', '.$row->max_lng);
+                return e($row->min_lat . ', ' . $row->min_lng . ' → ' . $row->max_lat . ', ' . $row->max_lng);
             })
             ->addColumn('center_label', function (Zone $row) {
-                if ($row->center_lat === null || $row->center_lng === null) return '—';
-                return e($row->center_lat.', '.$row->center_lng);
+                if ($row->center_lat === null || $row->center_lng === null)
+                    return '—';
+                return e($row->center_lat . ', ' . $row->center_lng);
             })
             ->addColumn('prices_count', fn(Zone $row) => (int) ($row->service_prices_count ?? 0))
             ->addColumn('is_active_badge', function (Zone $row) {
                 return $row->is_active
-                    ? '<span class="badge badge-light-success">'.e(__('zones.active')).'</span>'
-                    : '<span class="badge badge-light-danger">'.e(__('zones.inactive')).'</span>';
+                    ? '<span class="badge badge-light-success">' . e(__('zones.active')) . '</span>'
+                    : '<span class="badge badge-light-danger">' . e(__('zones.inactive')) . '</span>';
             })
             ->addColumn('created_at_label', fn(Zone $row) => $row->created_at?->format('Y-m-d') ?? '—')
             ->addColumn('actions', fn(Zone $row) => view('dashboard.zones._actions', compact('row'))->render())
             ->rawColumns(['polygon_badge', 'is_active_badge', 'actions'])
             ->make(true);
+    }
+
+    public function show(Zone $zone)
+    {
+        view()->share([
+            'title' => __('zones.show'),
+            'page_title' => __('zones.show'),
+        ]);
+
+        $zone->loadMissing([
+            'servicePrices' => function ($q) {
+                $q->with(['service:id,name,price,discounted_price'])
+                    ->orderBy('service_id')
+                    ->orderBy('time_period');
+            }
+        ])->loadCount('servicePrices');
+
+        return view('dashboard.zones.show', compact('zone'));
     }
 
     public function create()
@@ -152,7 +173,9 @@ class ZoneController extends Controller
     {
         return $request->validate([
             'name' => [
-                'required', 'string', 'max:190',
+                'required',
+                'string',
+                'max:190',
                 Rule::unique('zones', 'name')->ignore($ignoreId),
             ],
             'sort_order' => ['nullable', 'integer', 'min:0'],
@@ -197,22 +220,26 @@ class ZoneController extends Controller
      */
     private function normalizePolygon($input): ?array
     {
-        if ($input === null || $input === '') return null;
+        if ($input === null || $input === '')
+            return null;
 
         if (is_string($input)) {
             $decoded = json_decode($input, true);
-            if (json_last_error() !== JSON_ERROR_NONE) return null;
+            if (json_last_error() !== JSON_ERROR_NONE)
+                return null;
             $input = $decoded;
         }
 
-        if (!is_array($input)) return null;
+        if (!is_array($input))
+            return null;
 
         // GeoJSON Polygon
         if (($input['type'] ?? null) === 'Polygon' && isset($input['coordinates'][0]) && is_array($input['coordinates'][0])) {
             $ring = $input['coordinates'][0];
             $points = [];
             foreach ($ring as $pair) {
-                if (!is_array($pair) || count($pair) < 2) continue;
+                if (!is_array($pair) || count($pair) < 2)
+                    continue;
                 $lng = (float) $pair[0];
                 $lat = (float) $pair[1];
                 $points[] = ['lat' => $lat, 'lng' => $lng];
@@ -223,8 +250,10 @@ class ZoneController extends Controller
         // Array of points [{lat,lng},...]
         $points = [];
         foreach ($input as $p) {
-            if (!is_array($p)) continue;
-            if (!array_key_exists('lat', $p) || !array_key_exists('lng', $p)) continue;
+            if (!is_array($p))
+                continue;
+            if (!array_key_exists('lat', $p) || !array_key_exists('lng', $p))
+                continue;
             $points[] = ['lat' => (float) $p['lat'], 'lng' => (float) $p['lng']];
         }
 
@@ -235,23 +264,25 @@ class ZoneController extends Controller
     {
         if (!$polygon || count($polygon) < 3) {
             return [
-                ['min_lat'=>null,'max_lat'=>null,'min_lng'=>null,'max_lng'=>null],
-                ['lat'=>null,'lng'=>null],
+                ['min_lat' => null, 'max_lat' => null, 'min_lng' => null, 'max_lng' => null],
+                ['lat' => null, 'lng' => null],
             ];
         }
 
         $lats = array_map(fn($p) => (float) $p['lat'], $polygon);
         $lngs = array_map(fn($p) => (float) $p['lng'], $polygon);
 
-        $minLat = min($lats); $maxLat = max($lats);
-        $minLng = min($lngs); $maxLng = max($lngs);
+        $minLat = min($lats);
+        $maxLat = max($lats);
+        $minLng = min($lngs);
+        $maxLng = max($lngs);
 
         $centerLat = ($minLat + $maxLat) / 2;
         $centerLng = ($minLng + $maxLng) / 2;
 
         return [
-            ['min_lat'=>$minLat,'max_lat'=>$maxLat,'min_lng'=>$minLng,'max_lng'=>$maxLng],
-            ['lat'=>$centerLat,'lng'=>$centerLng],
+            ['min_lat' => $minLat, 'max_lat' => $maxLat, 'min_lng' => $minLng, 'max_lng' => $maxLng],
+            ['lat' => $centerLat, 'lng' => $centerLng],
         ];
     }
 }

@@ -22,6 +22,39 @@ return [
         'created_at' => 'Created At',
     ],
 
+    'id_label' => 'ID',
+    'show' => 'View Zone',
+
+    'map_title' => 'Map',
+    'fit_bounds' => 'Fit bounds',
+
+    'location_details' => 'Location Details',
+    'general_hint' => 'Use the tabs to view zone details and related service prices.',
+
+    'no_polygon_notice' => 'No polygon has been drawn for this zone yet.',
+    'no_prices_notice' => 'No service prices have been set for this zone yet.',
+
+    'tabs' => [
+        'general' => 'General',
+        'service_prices' => 'Service Prices',
+    ],
+
+    'prices' => [
+        'service' => 'Service',
+        'service_id' => 'Service ID',
+        'time_period' => 'Time period',
+        'price' => 'Price',
+        'discounted_price' => 'Discounted price',
+        'status' => 'Status',
+        'created_at' => 'Created at',
+    ],
+
+    'time_period' => [
+        'all' => 'All day',
+        'morning' => 'Morning',
+        'evening' => 'Evening',
+    ],
+
     'placeholders' => [
         'name' => 'e.g. Al Rimal District',
         'polygon' => 'Example:

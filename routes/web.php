@@ -130,8 +130,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('zones/datatable', [ZoneController::class, 'datatable'])->name('zones.datatable');
 
         Route::resource('zones', ZoneController::class)
-            ->names('zones')
-            ->except(['show']);
+            ->names('zones');
 
     });
 
