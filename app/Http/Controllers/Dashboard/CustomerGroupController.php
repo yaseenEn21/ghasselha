@@ -47,8 +47,10 @@ class CustomerGroupController extends Controller
         }
 
         if ($status = $request->get('status')) {
-            if ($status === 'active') $query->where('is_active', true);
-            if ($status === 'inactive') $query->where('is_active', false);
+            if ($status === 'active')
+                $query->where('is_active', true);
+            if ($status === 'inactive')
+                $query->where('is_active', false);
         }
 
         if ($request->filled('from')) {
@@ -61,8 +63,8 @@ class CustomerGroupController extends Controller
         return $datatable->eloquent($query)
             ->addColumn('is_active_badge', function (CustomerGroup $row) {
                 return $row->is_active
-                    ? '<span class="badge badge-light-success">'.e(__('customer_groups.active')).'</span>'
-                    : '<span class="badge badge-light-danger">'.e(__('customer_groups.inactive')).'</span>';
+                    ? '<span class="badge badge-light-success">' . e(__('customer_groups.active')) . '</span>'
+                    : '<span class="badge badge-light-danger">' . e(__('customer_groups.inactive')) . '</span>';
             })
             ->addColumn('prices_count', function (CustomerGroup $row) {
                 return (int) ($row->service_group_prices_count ?? 0);
@@ -75,6 +77,18 @@ class CustomerGroupController extends Controller
             })
             ->rawColumns(['is_active_badge', 'actions'])
             ->make(true);
+    }
+
+    public function show(CustomerGroup $customerGroup)
+    {
+        view()->share([
+            'title' => __('customer_groups.show'),
+            'page_title' => __('customer_groups.show'),
+        ]);
+
+        $customerGroup->loadCount('servicePrices');
+
+        return view('dashboard.customer_groups.show', compact('customerGroup'));
     }
 
     public function create()

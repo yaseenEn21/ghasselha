@@ -14,8 +14,10 @@ use App\Http\Controllers\Dashboard\PromotionController;
 use App\Http\Controllers\Dashboard\PromotionCouponController;
 use App\Http\Controllers\Dashboard\InvoiceController;
 use App\Http\Controllers\Dashboard\PaymentController;
-use App\Http\Controllers\Dashboard\CustomerGroupController;
 use App\Http\Controllers\Dashboard\ZoneController;
+use App\Http\Controllers\Dashboard\CustomerGroupController;
+use App\Http\Controllers\Dashboard\CustomerGroupServicePriceController;
+use App\Http\Controllers\Dashboard\ZoneServicePriceController;
 use App\Http\Controllers\ProfileController;
 
 Route::get('/', function () {
@@ -124,13 +126,48 @@ Route::middleware(['auth'])->group(function () {
 
         Route::resource('customer-groups', CustomerGroupController::class)
             ->parameters(['customer-groups' => 'customer_group'])
-            ->names('customer-groups')
-            ->except(['show']);
+            ->names('customer-groups');
+
+        Route::resource('customer-groups', CustomerGroupController::class);
+
+        // Service Prices (Ajax)
+        Route::get('customer-groups/{customerGroup}/service-prices/datatable', [CustomerGroupServicePriceController::class, 'datatable'])
+            ->name('customer-groups.service-prices.datatable');
+
+        Route::get('customer-groups/{customerGroup}/service-prices/{servicePrice}', [CustomerGroupServicePriceController::class, 'show'])
+            ->name('customer-groups.service-prices.show');
+
+        Route::post('customer-groups/{customerGroup}/service-prices', [CustomerGroupServicePriceController::class, 'store'])
+            ->name('customer-groups.service-prices.store');
+
+        Route::put('customer-groups/{customerGroup}/service-prices/{servicePrice}', [CustomerGroupServicePriceController::class, 'update'])
+            ->name('customer-groups.service-prices.update');
+
+        Route::delete('customer-groups/{customerGroup}/service-prices/{servicePrice}', [CustomerGroupServicePriceController::class, 'destroy'])
+            ->name('customer-groups.service-prices.destroy');
+
+        // Select2 services (exclude already assigned)
+        Route::get('customer-groups/{customerGroup}/services/search', [CustomerGroupServicePriceController::class, 'searchServices'])
+            ->name('customer-groups.services.search');
+
 
         Route::get('zones/datatable', [ZoneController::class, 'datatable'])->name('zones.datatable');
+        Route::resource('zones', ZoneController::class)->names('zones');
+        // Zone Service Prices (inside zone show)
+        Route::get('zones/{zone}/service-prices/services/search', [ZoneServicePriceController::class, 'searchServices'])
+            ->name('zones.service_prices.search.services');
 
-        Route::resource('zones', ZoneController::class)
-            ->names('zones');
+        Route::post('zones/{zone}/service-prices', [ZoneServicePriceController::class, 'store'])
+            ->name('zones.service_prices.store');
+
+        Route::get('zones/{zone}/service-prices/{servicePrice}', [ZoneServicePriceController::class, 'show'])
+            ->name('zones.service_prices.show');
+
+        Route::put('zones/{zone}/service-prices/{servicePrice}', [ZoneServicePriceController::class, 'update'])
+            ->name('zones.service_prices.update');
+
+        Route::delete('zones/{zone}/service-prices/{servicePrice}', [ZoneServicePriceController::class, 'destroy'])
+            ->name('zones.service_prices.destroy');
 
     });
 

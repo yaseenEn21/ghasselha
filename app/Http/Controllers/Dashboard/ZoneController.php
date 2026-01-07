@@ -92,18 +92,20 @@ class ZoneController extends Controller
 
     public function show(Zone $zone)
     {
+        $this->title = __('zones.view');
+        $this->page_title = $this->title;
+
         view()->share([
-            'title' => __('zones.show'),
-            'page_title' => __('zones.show'),
+            'title' => $this->page_title,
+            'page_title' => $this->page_title,
         ]);
 
         $zone->loadMissing([
             'servicePrices' => function ($q) {
                 $q->with(['service:id,name,price,discounted_price'])
-                    ->orderBy('service_id')
-                    ->orderBy('time_period');
-            }
-        ])->loadCount('servicePrices');
+                    ->latest('id');
+            },
+        ]);
 
         return view('dashboard.zones.show', compact('zone'));
     }

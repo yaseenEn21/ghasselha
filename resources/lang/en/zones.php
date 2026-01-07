@@ -20,6 +20,7 @@ return [
         'status' => 'Status',
         'prices_count' => 'Service Prices Count',
         'created_at' => 'Created At',
+        'updated_at' => 'Updated At',
     ],
 
     'id_label' => 'ID',
@@ -34,10 +35,54 @@ return [
     'no_polygon_notice' => 'No polygon has been drawn for this zone yet.',
     'no_prices_notice' => 'No service prices have been set for this zone yet.',
 
+
+    'view' => 'View Zone',
+    'edit_zone' => 'Edit Zone',
+
+    'map' => 'Map',
+    'map_hint_show' => 'Showing the zone polygon (read-only).',
+
     'tabs' => [
         'general' => 'General',
         'service_prices' => 'Service Prices',
     ],
+
+    'time_periods' => [
+        'all' => 'All day',
+        'morning' => 'Morning',
+        'evening' => 'Evening',
+    ],
+
+    'service_prices' => [
+        'hint' => 'Set zone-specific prices for services (by time period).',
+        'count' => 'Prices count',
+        'add' => 'Add service price',
+        'edit' => 'Edit service price',
+        'empty' => 'No service prices yet.',
+        'service' => 'Service',
+        'time_period' => 'Time period',
+        'price' => 'Price',
+        'discounted_price' => 'Discounted price',
+        'status' => 'Status',
+        'base_price' => 'Base price',
+        'base_discounted' => 'Base discounted',
+        'unique_notice' => 'Only one record allowed per (service + zone + time period).',
+        'delete_confirm' => 'This will remove the service price from the zone.',
+        'created_successfully' => 'Service price added successfully.',
+        'updated_successfully' => 'Service price updated successfully.',
+        'deleted_successfully' => 'Service price deleted successfully.',
+    ],
+
+    'auto_bbox_notice' => 'Bounding Box is calculated automatically on save to speed up geo filtering.',
+    'active' => 'Active',
+    'inactive' => 'Inactive',
+    'created_at' => 'Created at',
+    'actions' => 'Actions',
+    'delete' => 'Delete',
+    'save' => 'Save',
+    'cancel' => 'Cancel',
+    'done' => 'Done',
+    'are_you_sure' => 'Are you sure?',
 
     'prices' => [
         'service' => 'Service',
