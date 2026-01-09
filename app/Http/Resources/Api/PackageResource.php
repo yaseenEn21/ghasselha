@@ -17,6 +17,8 @@ class PackageResource extends JsonResource
             'name' => i18n($this->name),
             'description' => i18n($this->description),
             
+            'short_description' => i18n($this->description),
+            
             'price' => (string) $this->price,
             'discounted_price' => $this->discounted_price !== null ? (string) $this->discounted_price : null,
 

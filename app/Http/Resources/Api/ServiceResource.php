@@ -51,6 +51,8 @@ class ServiceResource extends JsonResource
             'name' => i18n($this->name),
             'description' => i18n($this->description),
 
+            'rate' => $this->rate ?? '4.5',
+
             'duration_minutes' => $this->duration_minutes,
 
             'price' => number_format($price, 2, '.', ''),

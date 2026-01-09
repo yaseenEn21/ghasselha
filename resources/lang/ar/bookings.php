@@ -12,6 +12,9 @@ return [
         'invoices' => 'الفواتير',
         'logs' => 'سجل الحالات',
         'meta' => 'بيانات إضافية',
+        'customer' => 'العملاء',
+        'employees' => 'الموظفين',
+        'booking' => 'الحجز',
     ],
 
     'columns' => [
