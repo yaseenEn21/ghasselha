@@ -45,9 +45,30 @@ Route::middleware(['auth'])->group(function () {
 
         Route::get('bookings', [BookingController::class, 'index'])->name('bookings.index');
         Route::get('bookings/datatable', [BookingController::class, 'datatable'])->name('bookings.datatable');
+        Route::get('bookings/create', [BookingController::class, 'create'])->name('bookings.create');
+        Route::get('bookings/slots', [BookingController::class, 'slots'])->name('bookings.slots');
         Route::get('bookings/{booking}', [BookingController::class, 'show'])->name('bookings.show');
         Route::patch('bookings/{booking}/status', [BookingController::class, 'updateStatus'])
             ->name('bookings.status.update');
+
+        // bookings
+        Route::post('bookings', [BookingController::class, 'store'])->name('bookings.store');
+
+        // ajax lookups
+        Route::get('bookings/lookups/users', [BookingController::class, 'usersLookup'])->name('bookings.lookups.users');
+        Route::get('bookings/lookups/users/{user}/cars', [BookingController::class, 'userCars'])->name('bookings.lookups.user_cars');
+        Route::get('bookings/lookups/users/{user}/addresses', [BookingController::class, 'userAddresses'])->name('bookings.lookups.user_addresses');
+
+        Route::get('bookings/lookups/products', [BookingController::class, 'productsLookup'])->name('bookings.lookups.products');
+
+        // modals (create quick entities)
+        Route::post('bookings/users', [BookingController::class, 'storeQuickCustomer'])->name('bookings.users.store');
+        Route::post('bookings/users/{user}/cars', [BookingController::class, 'storeUserCar'])->name('bookings.user_cars.store');
+        Route::post('bookings/users/{user}/addresses', [BookingController::class, 'storeUserAddress'])->name('bookings.user_addresses.store');
+
+        // vehicle lookups for car modal
+        Route::get('lookups/vehicle-makes', [BookingController::class, 'vehicleMakesLookup'])->name('lookups.vehicle_makes');
+        Route::get('lookups/vehicle-models', [BookingController::class, 'vehicleModelsLookup'])->name('lookups.vehicle_models');
 
         Route::get('services/{service}/sales-lines', [ServiceController::class, 'salesLinesDatatable'])->name('services.salesLines');
         Route::get('services/{service}/sales-stats', [ServiceController::class, 'salesStats'])->name('services.salesStats');

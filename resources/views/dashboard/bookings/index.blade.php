@@ -6,6 +6,7 @@
 
 @section('top-btns')
     {{-- لاحقاً: زر create --}}
+    <a href="{{ route('dashboard.bookings.create') }}" class="btn btn-primary"> {{ __('bookings.create.title') }} </a>
 @endsection
 
 <div class="card">

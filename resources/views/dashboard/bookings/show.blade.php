@@ -139,7 +139,7 @@
                         <div class="card card-flush h-100">
                             <div class="card-header">
                                 <div class="card-title">
-                                    <h3 class="fw-bold">{{ __('bookings.customer') }}</h3>
+                                    <h3 class="fw-bold">{{ __('bookings.customer.title') }}</h3>
                                 </div>
                             </div>
                             <div class="card-body pt-0">
@@ -163,11 +163,11 @@
                                         <span class="fw-semibold">{{ $booking->user_id }}</span>
                                     </div>
                                     <div class="d-flex justify-content-between">
-                                        <span class="text-muted">{{ __('bookings.car') }}</span>
+                                        <span class="text-muted">{{ __('bookings.car.title') }}</span>
                                         <span class="fw-semibold">{{ $carLabel }}</span>
                                     </div>
                                     <div class="d-flex justify-content-between">
-                                        <span class="text-muted">{{ __('bookings.address') }}</span>
+                                        <span class="text-muted">{{ __('bookings.address.title') }}</span>
                                         <span class="fw-semibold">{{ $addressLabel }}</span>
                                     </div>
                                 </div>
@@ -438,7 +438,7 @@
                             <tr>
                                 <td>#{{ $inv->id }}</td>
                                 <td class="fw-bold">{{ $inv->number ?? '—' }}</td>
-                                <td><span class="badge badge-light-{{ $invStatusClass }}">{{ $inv->status }}</span></td>
+                                <td><span class="badge badge-light-{{ $invStatusClass }}">{{ __('invoice_statuses.'. $inv->status) }}</span></td>
                                 <td>{{ $inv->type }}</td>
                                 <td class="fw-bold">{{ number_format((float)$inv->total, 2) }} {{ $inv->currency }}</td>
                                 <td>{{ $inv->paid_at?->format('Y-m-d H:i') ?? '—' }}</td>

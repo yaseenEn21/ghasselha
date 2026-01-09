@@ -9,12 +9,7 @@ use Carbon\Carbon;
 
 class SlotService
 {
-    /**
-     * @return array{
-     *   items: array<int, array{start_time:string,end_time:string,employees:array<int,array{employee_id:int,user_id:int,name:string}>}>,
-     *   meta: array<string,mixed>
-     * }
-     */
+    
     public function getSlots(string $date, int $serviceId, float $lat, float $lng, ?int $stepMinutes = null, string $mode = 'blocks'): array
     {
         $tz = config('app.timezone', 'UTC');

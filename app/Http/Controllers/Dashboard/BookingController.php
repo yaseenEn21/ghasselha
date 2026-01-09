@@ -7,11 +7,23 @@ use App\Models\Booking;
 use App\Models\Service;
 use App\Models\Employee;
 use App\Models\Zone;
+use Hash;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use Yajra\DataTables\DataTables;
+use App\Http\Requests\Dashboard\BookingStoreRequest;
+use App\Http\Requests\Dashboard\QuickCustomerRequest;
+use App\Http\Requests\Dashboard\DashboardCarStoreRequest;
+use App\Http\Requests\Dashboard\DashboardAddressStoreRequest;
+use App\Models\Address;
+use App\Models\BookingProduct;
+use App\Models\Car;
+use App\Models\Product;
+use App\Models\User;
+use App\Services\InvoiceService;
+use App\Services\SlotService;
 
 class BookingController extends Controller
 {
@@ -20,6 +32,7 @@ class BookingController extends Controller
 
     public function __construct()
     {
+        // app()->setLocale('en');
         // عدّل الصلاحيات حسب نظامك
         $this->middleware('can:bookings.view')->only(['index', 'datatable', 'show']);
         $this->middleware('can:bookings.edit')->only(['updateStatus']);
@@ -146,6 +159,508 @@ class BookingController extends Controller
             ->rawColumns(['status_badge', 'status_control', 'actions'])
             ->make(true);
     }
+
+    public function create()
+    {
+        view()->share([
+            'title' => __('bookings.create.title'),
+            'page_title' => __('bookings.create.title'),
+        ]);
+
+        $services = Service::query()
+            ->where('is_active', true)
+            ->whereHas('category', fn($q) => $q->where('is_active', true))
+            ->orderBy('sort_order')
+            ->get(['id','name','duration_minutes','price','discounted_price']);
+
+        return view('dashboard.bookings.create', compact('services'));
+    }
+
+    // --------------------------------------------
+    // AJAX: users lookup (select2)
+    // --------------------------------------------
+    public function usersLookup(Request $request)
+    {
+        $search = trim((string) $request->input('q'));
+
+        $q = User::query()->where('is_active', true);
+
+        // لو عندك user_type
+        $q->whereIn('user_type', ['customer', 'user', 'client'])->orWhereNull('user_type');
+
+        if ($search !== '') {
+            $q->where(function ($x) use ($search) {
+                $x->where('name', 'like', "%{$search}%")
+                  ->orWhere('mobile', 'like', "%{$search}%"); // ✅ عدّل لو اسم عمود الجوال مختلف
+            });
+        }
+
+        $items = $q->orderBy('id', 'desc')->limit(20)->get(['id','name','mobile']);
+
+        return response()->json([
+            'results' => $items->map(fn($u) => [
+                'id' => $u->id,
+                'text' => trim($u->name . ' - ' . ($u->mobile ?? '')),
+            ]),
+        ]);
+    }
+
+    public function userCars(User $user)
+    {
+        $cars = Car::query()
+            ->where('user_id', $user->id)
+            ->orderByDesc('is_default')
+            ->orderByDesc('id')
+            ->get(['id','vehicle_make_id','vehicle_model_id','plate_letters','plate_number']);
+
+        return response()->json([
+            'items' => $cars->map(fn($c) => [
+                'id' => $c->id,
+                'text' => "{$c->plate_letters}-{$c->plate_number}",
+            ]),
+        ]);
+    }
+
+    public function userAddresses(User $user)
+    {
+        $addresses = Address::query()
+            ->where('user_id', $user->id)
+            ->orderByDesc('is_default')
+            ->orderByDesc('id')
+            ->get(['id','type','city','area','address_line','lat','lng']);
+
+        return response()->json([
+            'items' => $addresses->map(fn($a) => [
+                'id' => $a->id,
+                'text' => trim(($a->city ?? '') . ' - ' . ($a->area ?? '') . ' - ' . ($a->address_line ?? '')),
+                'lat' => (string) $a->lat,
+                'lng' => (string) $a->lng,
+            ]),
+        ]);
+    }
+
+    // --------------------------------------------
+    // AJAX: products lookup (select2)
+    // --------------------------------------------
+    public function productsLookup(Request $request)
+    {
+        $search = trim((string) $request->input('q'));
+
+        $q = Product::query()->where('is_active', true);
+
+        if ($search !== '') {
+            // لو name json استخدم like على raw أو عندك helper i18n
+            $q->where(function ($x) use ($search) {
+                $x->where('name->ar', 'like', "%{$search}%")
+                  ->orWhere('name->en', 'like', "%{$search}%");
+            });
+        }
+
+        $items = $q->orderByDesc('id')->limit(20)->get(['id','name','price']);
+
+        return response()->json([
+            'results' => $items->map(fn($p) => [
+                'id' => $p->id,
+                'text' => (function () use ($p) {
+                    $name = function_exists('i18n') ? i18n($p->name) : ($p->name['ar'] ?? $p->name['en'] ?? '');
+                    return $name . ' - ' . rtrim(rtrim((string)$p->price, '0'), '.');
+                })(),
+            ]),
+        ]);
+    }
+
+    // --------------------------------------------
+    // AJAX: slots (from SlotService)
+    // --------------------------------------------
+    public function slots(Request $request, SlotService $slotService)
+    {
+        $data = $request->validate([
+            'service_id' => ['required','integer','exists:services,id'],
+            'address_id' => ['required','integer','exists:addresses,id'],
+            'booking_date' => ['required','date_format:Y-m-d'],
+        ]);
+
+        $address = Address::query()->select(['id','lat','lng'])->findOrFail($data['address_id']);
+
+        $date = Carbon::createFromFormat('Y-m-d', $data['booking_date'])->format('d-m-Y');
+
+        $slots = $slotService->getSlots(
+            $date,
+            (int) $data['service_id'],
+            (float) $address->lat,
+            (float) $address->lng,
+            null,
+            'blocks'
+        );
+        return response()->json($slots);
+    }
+
+    // --------------------------------------------
+    // MODAL: create quick customer
+    // --------------------------------------------
+    public function storeQuickCustomer(QuickCustomerRequest $request)
+    {
+        $data = $request->validated();
+
+        $u = DB::transaction(function () use ($data) {
+            $user = new User();
+            $user->name = $data['name'];
+            $user->mobile = $data['mobile']; // ✅ عدّل لو اسم العمود مختلف
+            $user->user_type = $user->user_type ?? 'customer';
+            $user->password = Hash::make('12345678');
+            $user->is_active = true;
+            $user->created_by = auth()->id();
+            $user->updated_by = auth()->id();
+            $user->save();
+
+            return $user;
+        });
+
+        return response()->json([
+            'ok' => true,
+            'id' => $u->id,
+            'text' => trim($u->name . ' - ' . ($u->mobile ?? '')),
+            'message' => __('bookings.customer_created'),
+        ]);
+    }
+
+    // --------------------------------------------
+    // MODAL: create car for user
+    // --------------------------------------------
+    public function storeUserCar(DashboardCarStoreRequest $request, User $user)
+    {
+        $data = $request->validated();
+
+        // unique per user + plate_number combo (مثل api)
+        $exists = Car::query()
+            ->where('user_id', $user->id)
+            ->where('plate_number', $data['plate_number'])
+            ->where('plate_letters', strtoupper($data['plate_letters']))
+            ->whereNull('deleted_at')
+            ->exists();
+
+        if ($exists) {
+            return response()->json([
+                'ok' => false,
+                'message' => __('bookings.car_duplicate'),
+                'errors' => ['plate_letters' => [__('bookings.car_duplicate')]],
+            ], 422);
+        }
+
+        $car = DB::transaction(function () use ($user, $data, $request) {
+            if ($request->boolean('is_default')) {
+                Car::where('user_id', $user->id)->update(['is_default' => false]);
+            }
+
+            $data['user_id'] = $user->id;
+            $data['plate_letters'] = strtoupper((string) $data['plate_letters']);
+            $data['is_default'] = $request->boolean('is_default');
+
+            $data['created_by'] = auth()->id();
+            $data['updated_by'] = auth()->id();
+
+            return Car::create($data);
+        });
+
+        return response()->json([
+            'ok' => true,
+            'id' => $car->id,
+            'text' => "{$car->plate_letters}-{$car->plate_number}",
+            'message' => __('bookings.car_created'),
+        ]);
+    }
+
+    // --------------------------------------------
+    // MODAL: create address for user
+    // --------------------------------------------
+    public function storeUserAddress(DashboardAddressStoreRequest $request, User $user)
+    {
+        $data = $request->validated();
+
+        $address = DB::transaction(function () use ($user, $data, $request) {
+
+            $makeDefault = $request->boolean('is_default', false);
+
+            $hasAny = Address::where('user_id', $user->id)->exists();
+            if (!$hasAny) $makeDefault = true;
+
+            if ($makeDefault) {
+                Address::where('user_id', $user->id)->update(['is_default' => false]);
+            }
+
+            $meta = is_array($data['meta'] ?? null) ? $data['meta'] : [];
+            if (!empty($data['address_link'])) {
+                $meta['address_link'] = $data['address_link'];
+            }
+
+            unset($data['address_link']);
+
+            $data['user_id'] = $user->id;
+            $data['is_default'] = $makeDefault;
+            $data['meta'] = $meta ?: null;
+
+            $data['created_by'] = auth()->id();
+            $data['updated_by'] = auth()->id();
+
+            return Address::create($data);
+        });
+
+        $label = trim(($address->city ?? '') . ' - ' . ($address->area ?? '') . ' - ' . ($address->address_line ?? ''));
+
+        return response()->json([
+            'ok' => true,
+            'id' => $address->id,
+            'text' => $label,
+            'lat' => (string) $address->lat,
+            'lng' => (string) $address->lng,
+            'message' => __('bookings.address_created'),
+        ]);
+    }
+
+    // --------------------------------------------
+    // Vehicle lookups
+    // --------------------------------------------
+    public function vehicleMakesLookup(Request $request)
+    {
+        $search = trim((string) $request->input('q'));
+
+        $q = \App\Models\VehicleMake::query();
+
+        if ($search !== '') {
+            $q->where('name', 'like', "%{$search}%");
+        }
+
+        $items = $q->orderBy('name')->limit(25)->get(['id','name']);
+
+        return response()->json([
+            'results' => $items->map(fn($m) => ['id' => $m->id, 'text' => $m->name]),
+        ]);
+    }
+
+    public function vehicleModelsLookup(Request $request)
+    {
+        $makeId = (int) $request->input('make_id');
+        $search = trim((string) $request->input('q'));
+
+        $q = \App\Models\VehicleModel::query();
+
+        if ($makeId) {
+            $q->where('vehicle_make_id', $makeId);
+        }
+
+        if ($search !== '') {
+            $q->where('name', 'like', "%{$search}%");
+        }
+
+        $items = $q->orderBy('name')->limit(25)->get(['id','name','vehicle_make_id']);
+
+        return response()->json([
+            'results' => $items->map(fn($m) => ['id' => $m->id, 'text' => $m->name]),
+        ]);
+    }
+
+    // --------------------------------------------
+    // STORE booking (dashboard)
+    // --------------------------------------------
+    public function store(
+        BookingStoreRequest $request,
+        SlotService $slotService,
+        InvoiceService $invoiceService
+    ) {
+        $data = $request->validated();
+
+        $user = User::query()->whereKey($data['user_id'])->where('is_active', true)->firstOrFail();
+
+        $car = Car::query()->whereKey($data['car_id'])->where('user_id', $user->id)->firstOrFail();
+        $address = Address::query()->whereKey($data['address_id'])->where('user_id', $user->id)->firstOrFail();
+
+        $service = Service::query()
+            ->whereKey($data['service_id'])
+            ->where('is_active', true)
+            ->whereHas('category', fn($q) => $q->where('is_active', true))
+            ->firstOrFail();
+
+        $duration = (int) $service->duration_minutes;
+
+        $dbDate = Carbon::createFromFormat('Y-m-d', $data['booking_date'])->toDateString();
+        $startTime = $data['start_time']; // H:i
+
+        $endTime = Carbon::createFromFormat('Y-m-d H:i', $dbDate.' '.$startTime)
+            ->addMinutes($duration)
+            ->format('H:i');
+
+        // ✅ Validate slot again (fresh)
+        $apiDate = Carbon::createFromFormat('Y-m-d', $data['booking_date'])->format('d-m-Y');
+
+        $slots = $slotService->getSlots(
+            $apiDate,
+            (int) $service->id,
+            (float) $address->lat,
+            (float) $address->lng,
+            null,
+            'blocks'
+        );
+
+        if (empty($slots['items'])) {
+            $code = $slots['meta']['error_code'] ?? null;
+            $msg = __('bookings.no_slots');
+            if ($code === 'OUT_OF_COVERAGE') $msg = __('bookings.out_of_coverage');
+            if ($code === 'NO_WORKING_HOURS') $msg = __('bookings.no_working_hours');
+
+            return response()->json([
+                'ok' => false,
+                'message' => $msg,
+                'errors' => ['start_time' => [$msg]],
+            ], 422);
+        }
+
+        $slot = collect($slots['items'])->first(fn($s) => ($s['start_time'] ?? null) === $startTime);
+        if (!$slot) {
+            return response()->json([
+                'ok' => false,
+                'message' => __('bookings.time_not_available'),
+                'errors' => ['start_time' => [__('bookings.time_not_available')]],
+            ], 422);
+        }
+
+        $employees = $slot['employees'] ?? [];
+        if (empty($employees)) {
+            return response()->json([
+                'ok' => false,
+                'message' => __('bookings.no_employee_for_slot'),
+                'errors' => ['employee_id' => [__('bookings.no_employee_for_slot')]],
+            ], 422);
+        }
+
+        $pickedEmployeeId = $data['employee_id'] ?? null;
+        if ($pickedEmployeeId) {
+            $found = collect($employees)->first(fn($e) => (int)$e['employee_id'] === (int)$pickedEmployeeId);
+            if (!$found) {
+                return response()->json([
+                    'ok' => false,
+                    'message' => __('bookings.employee_not_available'),
+                    'errors' => ['employee_id' => [__('bookings.employee_not_available')]],
+                ], 422);
+            }
+        } else {
+            $pickedEmployeeId = (int) $employees[0]['employee_id'];
+        }
+
+        // ✅ pricing resolve (كما في api)
+        $pricing = app(\App\Services\BookingPricingService::class)
+            ->resolve($service, $user, $address, $startTime);
+
+        $finalUnit = (float) $pricing['final_unit_price'];
+
+        $usingPackage = !empty($data['package_subscription_id']);
+        $chargeAmount = $usingPackage ? 0.0 : $finalUnit;
+
+        $booking = DB::transaction(function () use (
+            $data, $user, $car, $address, $service,
+            $dbDate, $startTime, $endTime, $duration,
+            $pricing, $finalUnit, $usingPackage, $chargeAmount,
+            $pickedEmployeeId, $invoiceService
+        ) {
+
+            $booking = Booking::create([
+                'user_id' => $user->id,
+                'car_id' => $car->id,
+                'address_id' => $address->id,
+                'service_id' => $service->id,
+
+                'zone_id' => $pricing['zone_id'] ?? null,
+                'time_period' => $pricing['time_period'] ?? 'all',
+
+                'service_unit_price_snapshot' => (float) ($pricing['unit_price'] ?? 0),
+                'service_discounted_price_snapshot' => $pricing['discounted_price'] !== null ? (float)$pricing['discounted_price'] : null,
+                'service_final_price_snapshot' => $finalUnit,
+
+                'service_charge_amount_snapshot' => $chargeAmount,
+                'service_pricing_source' => $usingPackage ? 'package' : ($pricing['pricing_source'] ?? 'base'),
+                'service_pricing_meta' => [
+                    'applied_id' => $pricing['applied_id'] ?? null,
+                    'lat' => (float) $address->lat,
+                    'lng' => (float) $address->lng,
+                ],
+
+                'employee_id' => $pickedEmployeeId,
+                'package_subscription_id' => $data['package_subscription_id'] ?? null,
+
+                'status' => 'pending',
+
+                'booking_date' => $dbDate,
+                'start_time' => $startTime,
+                'end_time' => $endTime,
+                'duration_minutes' => $duration,
+
+                'service_price_snapshot' => (float) $service->price,
+                'currency' => 'SAR',
+
+                'meta' => [
+                    'dashboard_note' => $data['note'] ?? null,
+                ],
+
+                'created_by' => auth()->id(),
+                'updated_by' => auth()->id(),
+            ]);
+
+            // Products
+            $productsSubtotal = 0.0;
+            $productsInput = $data['products'] ?? [];
+
+            foreach ($productsInput as $row) {
+                $prod = Product::query()
+                    ->whereKey((int)$row['product_id'])
+                    ->where('is_active', true)
+                    ->first();
+
+                if (!$prod) continue;
+
+                $qty = (int) $row['qty'];
+                $unit = (float) $prod->price;
+                $line = $qty * $unit;
+
+                BookingProduct::create([
+                    'booking_id' => $booking->id,
+                    'product_id' => $prod->id,
+                    'qty' => $qty,
+                    'unit_price_snapshot' => $unit,
+                    'title' => $prod->name, // json
+                    'line_total' => $line,
+                ]);
+
+                $productsSubtotal += $line;
+            }
+
+            $subtotal = ($usingPackage ? 0.0 : $finalUnit) + $productsSubtotal;
+            $total = $subtotal; // tax لاحقاً
+
+            $booking->update([
+                'products_subtotal_snapshot' => $productsSubtotal,
+                'subtotal_snapshot' => $subtotal,
+                'total_snapshot' => $total,
+            ]);
+
+            // لو total = 0 -> confirmed
+            if ($total <= 0.0) {
+                $booking->update([
+                    'status' => 'confirmed',
+                    'confirmed_at' => now(),
+                ]);
+            } else {
+                $invoiceService->createBookingInvoice($booking->fresh(['service','products']), auth()->id());
+            }
+
+            return $booking->fresh(['service','products','user','car','address','invoices']);
+        });
+
+        return response()->json([
+            'ok' => true,
+            'message' => __('bookings.created_successfully'),
+            'redirect' => route('dashboard.bookings.show', $booking->id),
+        ]);
+    }
+
 
     public function updateStatus(Request $request, Booking $booking)
     {

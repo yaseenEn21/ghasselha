@@ -25,14 +25,14 @@ class CarStoreRequest extends FormRequest
                 'required',
                 'string',
                 'regex:/^[A-Za-z\x{0600}-\x{06FF}]{1,3}$/u',
-                Rule::unique('cars')
+                Rule::unique('cars', 'plate_letters')
                     ->where(
                         fn($q) => $q
                             ->where('user_id', $this->user()->id)
                             ->where('plate_number', $this->input('plate_number'))
+                            ->whereNull('deleted_at') // ✅ تجاهل المحذوف سوفت
                     ),
             ],
-
             'plate_letters_ar' => ['nullable', 'string', 'regex:/^[\x{0600}-\x{06FF}]{1,3}$/u'],
             'is_default' => ['nullable', 'boolean'],
         ];

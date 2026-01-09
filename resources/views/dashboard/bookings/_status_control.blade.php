@@ -25,9 +25,9 @@
 
 <div class="d-flex align-items-center gap-2">
     {{-- Always show current badge --}}
-    {{-- <span class="badge {{ $badgeClass }}">
+    <span class="badge {{ $badgeClass }}">
         {{ __('bookings.status.'.$status) }}
-    </span> --}}
+    </span>
 
     @if(!$locked)
         <select class="form-select form-select-sm w-150px js-booking-status-select"
