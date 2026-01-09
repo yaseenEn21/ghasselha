@@ -113,9 +113,26 @@ class BookingController extends Controller
         // ✅ تحقق slot متاح + احصل موظفين
         $slots = $slotService->getSlots($data['date'], (int) $service->id, (float) $address->lat, (float) $address->lng);
 
-        $slot = collect($slots['items'] ?? [])->first(fn($s) => ($s['start_time'] ?? null) === $startTime);
-        if (!$slot)
+        // ✅ لو ما في slots أصلاً: رجّع رسالة حسب السبب
+        if (empty($slots['items'])) {
+            $code = $slots['meta']['error_code'] ?? null;
+
+            if ($code === 'OUT_OF_COVERAGE') {
+                return api_error('Address is outside service coverage area', 422);
+            }
+
+            if ($code === 'NO_WORKING_HOURS') {
+                return api_error('No working hours available for the selected date', 422);
+            }
+
+            return api_error('No slots available for the selected date', 422);
+        }
+
+        // بعدها افحص الوقت المحدد
+        $slot = collect($slots['items'])->first(fn($s) => ($s['start_time'] ?? null) === $startTime);
+        if (!$slot) {
             return api_error('Selected time is not available', 422);
+        }
 
         $employees = $slot['employees'] ?? [];
         if (empty($employees))
@@ -400,7 +417,7 @@ class BookingController extends Controller
             $incoming = collect($data['products'])->keyBy('product_id');
 
             if ($incoming->isEmpty()) {
-                
+
                 BookingProduct::query()
                     ->where('booking_id', $booking->id)
                     ->delete();
