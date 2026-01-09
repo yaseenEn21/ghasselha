@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\Auth\AuthController;
 use App\Http\Controllers\Api\BookingController;
 use App\Http\Controllers\Api\BookingPackageController;
+use App\Http\Controllers\Api\BookingRatingController;
 use App\Http\Controllers\Api\PointController;
 use App\Http\Controllers\Api\ProfileController;
 use App\Http\Controllers\Api\ServiceCategoryController;
@@ -61,6 +62,8 @@ Route::prefix('v1')->middleware(['set.api.locale'])->group(function () {
         Route::delete('bookings/{booking}', [BookingController::class, 'cancel']);
         Route::get('bookings', [BookingController::class, 'index']);
         Route::get('bookings/{booking}', [BookingController::class, 'show']);
+        Route::get('bookings/{booking}/rating', [BookingRatingController::class, 'show']);
+        Route::post('bookings/{booking}/rating', [BookingRatingController::class, 'store']);
 
         Route::get('my-cars', [MyCarController::class, 'index']);
         Route::post('my-cars', [MyCarController::class, 'store']);

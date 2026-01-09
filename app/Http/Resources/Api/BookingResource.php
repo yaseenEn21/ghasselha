@@ -16,11 +16,11 @@ class BookingResource extends JsonResource
         return [
             'id' => (int) $this->id,
             'status' => (string) $this->status,
-            'status_label' => __('bookings.status.'.$this->status),
+            'status_label' => __('bookings.status.' . $this->status),
 
             'date' => $this->booking_date?->format('d-m-Y'),
-            'start_time' => substr((string)$this->start_time, 0, 5),
-            'end_time' => substr((string)$this->end_time, 0, 5),
+            'start_time' => substr((string) $this->start_time, 0, 5),
+            'end_time' => substr((string) $this->end_time, 0, 5),
             'duration_minutes' => (int) $this->duration_minutes,
 
             'car_id' => (int) $this->car_id,
@@ -31,8 +31,8 @@ class BookingResource extends JsonResource
             'service_name' => $this->relationLoaded('service') ? i18n($this->service->name) : null,
 
             'package_subscription_id' => $this->package_subscription_id ? (int) $this->package_subscription_id : null,
-            'package_covers_service' => (bool)($this->meta['package_covers_service'] ?? false),
-            'package_deducted' => (bool)($this->meta['package_deducted'] ?? false),
+            'package_covers_service' => (bool) ($this->meta['package_covers_service'] ?? false),
+            'package_deducted' => (bool) ($this->meta['package_deducted'] ?? false),
 
             'totals' => [
                 'service_final' => (float) $this->service_final_price_snapshot,
@@ -53,6 +53,10 @@ class BookingResource extends JsonResource
                 'total' => (float) $latestUnpaid->total,
                 'currency' => (string) $latestUnpaid->currency,
             ] : null,
+
+            'rating' => $this->rating ? (int) $this->rating : null,
+            'rating_comment' => $this->rating_comment,
+            'rated_at' => $this->rated_at?->toISOString(),
         ];
     }
 }

@@ -29,6 +29,9 @@
     $descArr = is_array($service->description ?? null) ? $service->description ?? [] : [];
     $descFirst = $descArr ? reset($descArr) : null;
     $desc = $descArr[$locale] ?? ($descFirst ?: null);
+
+    $rate_count = $service->rate_count ?? 0;
+    $rate = number_format((float) $service->rating_avg, 1, '.', '');
 @endphp
 
 
@@ -172,6 +175,73 @@
                 <div class="text-muted fs-7 mt-4">
                     {{ __('services.sales_note_completed_only') }}
                 </div>
+            </div>
+        </div>
+
+        {{-- Rating box (ضعه تحت بوكس إحصائيات المبيعات) --}}
+        <div class="card card-flush mt-6">
+            <div class="card-header pt-5">
+                <h3 class="card-title fw-bold">{{ __('services.rating.title') }}</h3>
+            </div>
+
+            <div class="card-body pt-0">
+
+                {{-- Average + Stars + Count --}}
+                <div class="d-flex align-items-center justify-content-between mb-5">
+                    <div>
+                        <div class="fw-bold fs-2">
+                            {{ number_format((float) ($ratingAvg ?? 0), 1, '.', '') }}
+                        </div>
+                        <div class="text-muted fs-7">
+                            {{ __('services.rating.based_on') }}
+                            <span class="fw-semibold">{{ (int) ($ratingCount ?? 0) }}</span>
+                            {{ __('services.rating.reviews') }}
+                        </div>
+                    </div>
+
+                    @php
+                        $avg = (float) ($ratingAvg ?? 0);
+                        $filled = (int) round($avg); // 1..5
+                        $filled = max(0, min(5, $filled));
+                    @endphp
+
+                    <div class="d-flex align-items-center gap-1">
+                        @for ($i = 1; $i <= 5; $i++)
+                            <i class="ki-duotone ki-star fs-2 {{ $i <= $filled ? 'text-warning' : 'text-gray-300' }}">
+                                <span class="path1"></span><span class="path2"></span>
+                            </i>
+                        @endfor
+                    </div>
+                </div>
+
+                {{-- Breakdown (5 -> 1) --}}
+                @if (isset($ratingBreakdown) && is_array($ratingBreakdown) && (int) ($ratingCount ?? 0) > 0)
+                    <div class="d-flex flex-column gap-3 mb-6">
+                        @for ($s = 5; $s >= 1; $s--)
+                            @php
+                                $c = (int) ($ratingBreakdown[$s] ?? 0);
+                                $total = (int) ($ratingCount ?? 0);
+                                $pct = $total > 0 ? round(($c / $total) * 100) : 0;
+                            @endphp
+
+                            <div class="d-flex align-items-center gap-3">
+                                <div class="text-muted fs-7" style="width:52px; white-space:nowrap;">
+                                    {{ $s }} ★
+                                </div>
+
+                                <div class="progress flex-grow-1" style="height:8px;">
+                                    <div class="progress-bar bg-warning" role="progressbar"
+                                        style="width: {{ $pct }}%"></div>
+                                </div>
+
+                                <div class="text-muted fs-7" style="width:32px; text-align:end;">
+                                    {{ $c }}
+                                </div>
+                            </div>
+                        @endfor
+                    </div>
+                @endif
+
             </div>
         </div>
 

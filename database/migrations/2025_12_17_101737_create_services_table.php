@@ -26,6 +26,11 @@ return new class extends Migration {
 
             $table->unsignedInteger('sort_order')->default(0);
 
+            $table->unsignedInteger('rating_count')->default(0);
+            $table->unsignedInteger('rating_sum')->default(0);
+            $table->decimal('rating_avg', 3, 2)->default(0);
+            $table->timestamp('rating_last_at')->nullable();
+
             $table->foreignId('created_by')->nullable()->constrained('users')->nullOnDelete();
             $table->foreignId('updated_by')->nullable()->constrained('users')->nullOnDelete();
 

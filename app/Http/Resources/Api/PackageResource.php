@@ -22,6 +22,8 @@ class PackageResource extends JsonResource
             'price' => (string) $this->price,
             'discounted_price' => $this->discounted_price !== null ? (string) $this->discounted_price : null,
 
+            'washes_count' => $this->washes_count,
+            
             'remaining_washes' => $sub?->remaining_washes,
             'total_washes_snapshot' => $sub?->total_washes_snapshot,
 

@@ -72,6 +72,10 @@ return new class extends Migration {
             $table->string('cancel_reason')->nullable();
             $table->text('cancel_note')->nullable();
 
+            $table->unsignedTinyInteger('rating')->nullable();
+            $table->text('rating_comment')->nullable();
+            $table->timestamp('rated_at')->nullable();
+
             $table->json('meta')->nullable();
 
             $table->foreignId('created_by')->nullable()->constrained('users')->nullOnDelete();

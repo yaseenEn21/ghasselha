@@ -293,6 +293,9 @@ class ServiceController extends Controller
         $totalCount = (int) $base->count();
         $totalSales = (float) $base->sum('service_final_price_snapshot');
 
+        $ratingAvg = $service->rating_avg;
+        $ratingCount = $service->rating_count;
+
         // title
         $this->title = t('services.view');
         $this->page_title = $this->title;
@@ -307,7 +310,9 @@ class ServiceController extends Controller
             'from',
             'to',
             'totalCount',
-            'totalSales'
+            'totalSales',
+            'ratingAvg',
+            'ratingCount'
         ));
     }
 

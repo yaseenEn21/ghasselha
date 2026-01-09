@@ -47,11 +47,16 @@ class ServiceResource extends JsonResource
         return [
             'id' => $this->id,
             'service_category_id' => $this->service_category_id,
-            
+
             'name' => i18n($this->name),
             'description' => i18n($this->description),
 
-            'rate' => $this->rate ?? '4.5',
+            'rate' => $this->rating_count > 0
+                ? number_format((float) $this->rating_avg, 1, '.', '')
+                : null,
+
+            'rate_count' => (int) $this->rating_count,
+
 
             'duration_minutes' => $this->duration_minutes,
 
@@ -61,7 +66,8 @@ class ServiceResource extends JsonResource
             // (اختياري للتأكد أثناء التطوير)
             'pricing_source' => $source,
 
-            'image_url' => $this->getFirstMediaUrl('image') ?: defaultImage(),
+            // 'image_url' => $this->getFirstMediaUrl('image') ?: defaultImage(),
+            'image_url' => $this->getImageUrl(app()->getLocale()) ?: defaultImage(),
         ];
     }
 
