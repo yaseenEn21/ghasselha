@@ -9,6 +9,8 @@ use App\Models\Employee;
 use App\Models\Zone;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 use Yajra\DataTables\DataTables;
 
 class BookingController extends Controller
@@ -20,6 +22,7 @@ class BookingController extends Controller
     {
         // عدّل الصلاحيات حسب نظامك
         $this->middleware('can:bookings.view')->only(['index', 'datatable', 'show']);
+        $this->middleware('can:bookings.edit')->only(['updateStatus']);
 
         $this->title = __('bookings.title');
         $this->page_title = __('bookings.title');
@@ -33,9 +36,9 @@ class BookingController extends Controller
     public function index()
     {
         // للفلاتر (اختياري)
-        $services  = Service::query()->select('id', 'name')->where('is_active', true)->orderBy('sort_order')->get();
+        $services = Service::query()->select('id', 'name')->where('is_active', true)->orderBy('sort_order')->get();
         $employees = Employee::query()->select('id')->get(); // إن عندك حقول اسم/موبايل اعرضهم بالواجهة
-        $zones     = class_exists(Zone::class) ? Zone::query()->select('id', 'name')->orderBy('sort_order')->get() : collect();
+        $zones = class_exists(Zone::class) ? Zone::query()->select('id', 'name')->orderBy('sort_order')->get() : collect();
 
         return view('dashboard.bookings.index', compact('services', 'employees', 'zones'));
     }
@@ -53,13 +56,13 @@ class BookingController extends Controller
 
         // -------- Filters --------
         if ($status = $request->get('status')) {
-            if (in_array($status, ['pending','confirmed','moving','arrived','completed','cancelled'], true)) {
+            if (in_array($status, ['pending', 'confirmed', 'moving', 'arrived', 'completed', 'cancelled'], true)) {
                 $query->where('status', $status);
             }
         }
 
         if ($tp = $request->get('time_period')) {
-            if (in_array($tp, ['morning','evening','all'], true)) {
+            if (in_array($tp, ['morning', 'evening', 'all'], true)) {
                 $query->where('time_period', $tp);
             }
         }
@@ -93,18 +96,18 @@ class BookingController extends Controller
                 // user name/mobile
                 $q->orWhereHas('user', function ($u) use ($search) {
                     $u->where('name', 'like', "%{$search}%")
-                      ->orWhere('mobile', 'like', "%{$search}%");
+                        ->orWhere('mobile', 'like', "%{$search}%");
                 });
 
                 // service name (json)
                 $q->orWhereHas('service', function ($s) use ($search) {
                     $s->where('name->ar', 'like', "%{$search}%")
-                      ->orWhere('name->en', 'like', "%{$search}%");
+                        ->orWhere('name->en', 'like', "%{$search}%");
                 });
 
                 // cancel reason/note
                 $q->orWhere('cancel_reason', 'like', "%{$search}%")
-                  ->orWhere('cancel_note', 'like', "%{$search}%");
+                    ->orWhere('cancel_note', 'like', "%{$search}%");
             });
         }
 
@@ -119,13 +122,16 @@ class BookingController extends Controller
             })
             ->addColumn('schedule', function (Booking $row) {
                 $d = $row->booking_date ? Carbon::parse($row->booking_date)->format('Y-m-d') : '—';
-                $s = $row->start_time ? substr((string)$row->start_time, 0, 5) : '—';
-                $e = $row->end_time ? substr((string)$row->end_time, 0, 5) : '—';
+                $s = $row->start_time ? substr((string) $row->start_time, 0, 5) : '—';
+                $e = $row->end_time ? substr((string) $row->end_time, 0, 5) : '—';
                 $tp = $row->time_period ? __('bookings.time_period.' . $row->time_period) : '—';
                 return e("{$d} • {$s} → {$e} • {$tp}");
             })
             ->addColumn('status_badge', function (Booking $row) {
                 return $this->statusBadge($row->status);
+            })
+            ->addColumn('status_control', function (Booking $row) {
+                return view('dashboard.bookings._status_control', ['booking' => $row])->render();
             })
             ->addColumn('total', function (Booking $row) {
                 return number_format((float) ($row->total_snapshot ?? 0), 2) . ' ' . e($row->currency ?? 'SAR');
@@ -137,8 +143,84 @@ class BookingController extends Controller
             ->addColumn('actions', function (Booking $row) {
                 return view('dashboard.bookings._actions', ['booking' => $row])->render();
             })
-            ->rawColumns(['status_badge', 'actions'])
+            ->rawColumns(['status_badge', 'status_control', 'actions'])
             ->make(true);
+    }
+
+    public function updateStatus(Request $request, Booking $booking)
+    {
+        // $this->authorize('view', $booking); // أو can:bookings.edit إن عندك
+        // إن عندك middleware لصلاحية التعديل:
+        // $this->middleware('can:bookings.edit')->only('updateStatus');
+
+        $data = $request->validate([
+            'status' => ['required', Rule::in(['pending', 'confirmed', 'moving', 'arrived', 'completed', 'cancelled'])],
+            'note' => ['nullable', 'string', 'max:1000'],
+        ]);
+
+        // لو مكتمل/ملغي → لا يسمح بالتعديل (حسب طلبك)
+        if (in_array($booking->status, ['completed', 'cancelled'], true)) {
+            return response()->json([
+                'ok' => false,
+                'message' => __('bookings.status_locked'),
+            ], 409);
+        }
+
+        return DB::transaction(function () use ($booking, $data) {
+            $booking = Booking::query()->whereKey($booking->id)->lockForUpdate()->first();
+
+            if (in_array($booking->status, ['completed', 'cancelled'], true)) {
+                return response()->json([
+                    'ok' => false,
+                    'message' => __('bookings.status_locked'),
+                ], 409);
+            }
+
+            $from = $booking->status;
+            $to = $data['status'];
+
+            // لو نفس الحالة
+            if ($from === $to) {
+                return response()->json([
+                    'ok' => true,
+                    'message' => __('bookings.status_no_change'),
+                    'html' => view('dashboard.bookings._status_control', ['booking' => $booking])->render(),
+                ]);
+            }
+
+            // timestamps بسيطة
+            $update = ['status' => $to, 'updated_by' => auth()->id()];
+
+            if ($to === 'confirmed' && !$booking->confirmed_at) {
+                $update['confirmed_at'] = now();
+            }
+
+            if ($to === 'cancelled') {
+                $update['cancelled_at'] = now();
+                // اختياري: خزّن سبب سريع لو بدك
+                if (!$booking->cancel_reason)
+                    $update['cancel_reason'] = 'dashboard';
+            }
+
+            $booking->update($update);
+
+            // ✅ log
+            $booking->statusLogs()->create([
+                'from_status' => $from,
+                'to_status' => $to,
+                'note' => $data['note'] ?? null,
+                'created_by' => auth()->id(),
+                'created_at' => now(),
+            ]);
+
+            $booking->refresh();
+
+            return response()->json([
+                'ok' => true,
+                'message' => __('bookings.status_updated'),
+                'html' => view('dashboard.bookings._status_control', ['booking' => $booking])->render(),
+            ]);
+        });
     }
 
     public function show(Booking $booking)
@@ -159,12 +241,12 @@ class BookingController extends Controller
             'employee',
             'packageSubscription',
             'products.product',
-            'statusLogs' => fn ($q) => $q->orderByDesc('created_at'),
-            'invoices' => fn ($q) => $q->orderByDesc('id')->with('payments'),
+            'statusLogs' => fn($q) => $q->orderByDesc('created_at'),
+            'invoices' => fn($q) => $q->orderByDesc('id')->with('payments'),
         ]);
 
         $latestInvoice = $booking->invoices->first();
-        $latestUnpaid  = $booking->invoices->firstWhere('status', 'unpaid');
+        $latestUnpaid = $booking->invoices->firstWhere('status', 'unpaid');
 
         return view('dashboard.bookings.show', compact('booking', 'latestInvoice', 'latestUnpaid'));
     }
@@ -173,7 +255,8 @@ class BookingController extends Controller
 
     private function i18n($json, string $fallback = '—'): string
     {
-        if (!$json) return $fallback;
+        if (!$json)
+            return $fallback;
         $locale = app()->getLocale();
 
         if (is_array($json)) {
@@ -188,10 +271,10 @@ class BookingController extends Controller
         $status = $status ?: 'pending';
 
         $map = [
-            'pending'   => 'badge-light-warning',
+            'pending' => 'badge-light-warning',
             'confirmed' => 'badge-light-primary',
-            'moving'    => 'badge-light-info',
-            'arrived'   => 'badge-light-primary',
+            'moving' => 'badge-light-info',
+            'arrived' => 'badge-light-primary',
             'completed' => 'badge-light-success',
             'cancelled' => 'badge-light-danger',
         ];

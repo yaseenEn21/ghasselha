@@ -89,7 +89,7 @@
                     <th>{{ __('bookings.columns.schedule') }}</th>
                     <th>{{ __('bookings.columns.employee') }}</th>
                     <th>{{ __('bookings.columns.total') }}</th>
-                    <th>{{ __('bookings.columns.status') }}</th>
+                    <th>{{ __('bookings.columns.status_control') }}</th>
                     <th class="text-end">{{ __('bookings.columns.actions') }}</th>
                 </tr>
                 </thead>
@@ -128,7 +128,7 @@
             {data: 'schedule', name: 'booking_date', orderable: true, searchable: false},
             {data: 'employee_label', name: 'employee_id', orderable: false, searchable: false},
             {data: 'total', name: 'total_snapshot', searchable: false},
-            {data: 'status_badge', name: 'status', orderable: false, searchable: false},
+            {data: 'status_control', name: 'status', orderable: false, searchable: false},
             {data: 'actions', name: 'actions', orderable: false, searchable: false, className: 'text-end'},
         ],
         drawCallback: function () {
@@ -151,6 +151,39 @@
         $('#employee_id').val('');
         $('#zone_id').val('');
         table.ajax.reload();
+    });
+
+    // ✅ change status ajax
+    $(document).on('change', '.js-booking-status-select', function () {
+        const $select = $(this);
+        const url = $select.data('url');
+        const status = $select.val();
+
+        $.ajax({
+            url: url,
+            type: 'PATCH',
+            data: {
+                _token: "{{ csrf_token() }}",
+                status: status
+            },
+            success: function (res) {
+                if (res && res.ok) {
+                    // الأفضل: reload نفس الصفحة بدون ما يرجع لأول صفحة
+                    table.ajax.reload(null, false);
+
+                    // optional toast
+                    if (window.toastr) toastr.success(res.message || "{{ __('bookings.status_updated') }}");
+                } else {
+                    table.ajax.reload(null, false);
+                    if (window.toastr) toastr.error(res.message || 'Error');
+                }
+            },
+            error: function (xhr) {
+                table.ajax.reload(null, false);
+                const msg = xhr.responseJSON?.message || "{{ __('bookings.status_update_failed') }}";
+                if (window.toastr) toastr.error(msg);
+            }
+        });
     });
 
 })();

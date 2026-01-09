@@ -46,6 +46,8 @@ Route::middleware(['auth'])->group(function () {
         Route::get('bookings', [BookingController::class, 'index'])->name('bookings.index');
         Route::get('bookings/datatable', [BookingController::class, 'datatable'])->name('bookings.datatable');
         Route::get('bookings/{booking}', [BookingController::class, 'show'])->name('bookings.show');
+        Route::patch('bookings/{booking}/status', [BookingController::class, 'updateStatus'])
+            ->name('bookings.status.update');
 
         Route::get('services/{service}/sales-lines', [ServiceController::class, 'salesLinesDatatable'])->name('services.salesLines');
         Route::get('services/{service}/sales-stats', [ServiceController::class, 'salesStats'])->name('services.salesStats');

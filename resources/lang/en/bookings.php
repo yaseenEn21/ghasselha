@@ -22,7 +22,15 @@ return [
         'total' => 'Total',
         'status' => 'Status',
         'actions' => 'Actions',
+        'status_control' => 'Status',
     ],
+
+    'status_updated' => 'Booking status updated successfully.',
+    'status_update_failed' => 'Failed to update booking status.',
+    'status_locked' => 'Status cannot be changed after completion or cancellation.',
+    'status_no_change' => 'No status change.',
+
+    'service' => 'Service',
 
     'filters' => [
         'search_placeholder' => 'Search: booking id / customer name / mobile / service...',
