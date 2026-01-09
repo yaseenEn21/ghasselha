@@ -18,6 +18,7 @@ use App\Http\Controllers\Dashboard\ZoneController;
 use App\Http\Controllers\Dashboard\CustomerGroupController;
 use App\Http\Controllers\Dashboard\CustomerGroupServicePriceController;
 use App\Http\Controllers\Dashboard\ZoneServicePriceController;
+use App\Http\Controllers\Dashboard\BookingController;
 use App\Http\Controllers\ProfileController;
 
 Route::get('/', function () {
@@ -42,6 +43,9 @@ Route::middleware(['auth'])->group(function () {
         Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
         Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
+        Route::get('bookings', [BookingController::class, 'index'])->name('bookings.index');
+        Route::get('bookings/datatable', [BookingController::class, 'datatable'])->name('bookings.datatable');
+        Route::get('bookings/{booking}', [BookingController::class, 'show'])->name('bookings.show');
 
         Route::get('services/{service}/sales-lines', [ServiceController::class, 'salesLinesDatatable'])->name('services.salesLines');
         Route::get('services/{service}/sales-stats', [ServiceController::class, 'salesStats'])->name('services.salesStats');

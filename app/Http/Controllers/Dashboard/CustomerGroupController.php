@@ -39,7 +39,7 @@ class CustomerGroupController extends Controller
     {
         $query = CustomerGroup::query()
             ->select('customer_groups.*')
-            ->withCount('serviceGroupPrices')
+            ->withCount('servicePrices')
             ->latest('id');
 
         if ($search = trim((string) $request->get('search_custom'))) {
@@ -67,7 +67,7 @@ class CustomerGroupController extends Controller
                     : '<span class="badge badge-light-danger">' . e(__('customer_groups.inactive')) . '</span>';
             })
             ->addColumn('prices_count', function (CustomerGroup $row) {
-                return (int) ($row->service_group_prices_count ?? 0);
+                return (int) ($row->service_prices_count ?? 0);
             })
             ->addColumn('created_at_label', function (CustomerGroup $row) {
                 return $row->created_at ? $row->created_at->format('Y-m-d') : '—';

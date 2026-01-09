@@ -36,6 +36,18 @@
                         </a>
                     @endcan
 
+                    @can('bookings.view')
+                        <a class="menu-link" href="{{ route('dashboard.bookings.index') }}">
+                            <span class="menu-icon">
+                                <i class="ki-duotone ki-profile-user fs-2">
+                                    <span class="path1"></span><span class="path2"></span>
+                                    <span class="path3"></span><span class="path4"></span>
+                                </i>
+                            </span>
+                            <span class="menu-title">{{ t(key: 'bookings.title') }}</span>
+                        </a>
+                    @endcan
+
                     @can('services.view')
                         <a class="menu-link" href="{{ route('dashboard.services.index') }}">
                             <span class="menu-icon">

@@ -2,6 +2,7 @@
 return [
   'users'    => ['create', 'edit', 'delete', 'view'],
   'roles'    => ['create', 'edit', 'delete', 'view'],
+  'bookings' => ['create', 'edit', 'delete', 'view'],
   'services' => ['create', 'edit', 'delete', 'view'],
   'products' => ['create', 'edit', 'delete', 'view'],
   'packages' => ['create', 'edit', 'delete', 'view'],
